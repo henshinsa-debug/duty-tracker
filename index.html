@@ -359,7 +359,7 @@
   <div id="tab-dutycards" class="tab-content">
     <div class="card" style="padding:10px 12px; margin-bottom:10px;">
       <div class="dc-top-controls">
-        <input type="text" id="dcSearchInput" placeholder="Search route or duty code (e.g. 1084, 1201, 2095)..." oninput="renderDutyCards()" />
+        <input type="text" id="dcSearchInput" placeholder="Search route or duty code (e.g. 1084, 1201, 3210)..." oninput="renderDutyCards()" />
         <div class="route-bar" id="routeTabsBar"></div>
         <div class="shift-filter-bar" id="dcShiftFilterBar"></div>
       </div>
@@ -402,7 +402,7 @@
     </label>
     <label class="toggle-row ph-row">
       <span style="font-size:13px; font-weight:700; color:#c7d2fe;" id="lblModalPh">PH (+1 Day)</span>
-      <input type="checkbox" id="modalPhToggle" style="width:20px; height:20px;" />
+      <input type="checkbox" id="modalPhToggle" style="width:20px; height:20px;" onchange="onModalPhToggleChange()" />
     </label>
     <div class="toggle-row" style="cursor:default; gap:8px;">
       <div style="flex:1;">
@@ -560,6 +560,46 @@ const S12_1XXX = {
   "1273": { depot: "Pasir Ris Int", note: "", segs: [[1115, 1517]] }
 };
 
+// Route 12 (Pasir Ris Trunk Saturday Schedule from 27-12-2025)
+const S12_3XXX = {
+  "3210": { depot: "Loyang Depot", note: "", segs: [[370, 810]] },
+  "3211": { depot: "Loyang Depot", note: "", segs: [[371, 903]] },
+  "3212": { depot: "Loyang Depot", note: "", segs: [[385, 892]] },
+  "3213": { depot: "Loyang Depot", note: "", segs: [[385, 900]] },
+  "3214": { depot: "Loyang Depot", note: "", segs: [[399, 1067]] },
+  "3215": { depot: "Loyang Depot", note: "", segs: [[413, 917]] },
+  "3216": { depot: "Loyang Depot", note: "", segs: [[427, 1022]] },
+  "3217": { depot: "Loyang Depot", note: "", segs: [[442, 1121]] },
+  "3218": { depot: "Loyang Depot", note: "", segs: [[457, 1006]] },
+  "3219": { depot: "Loyang Depot", note: "P", segs: [[472, 725], [986, 1255]] },
+  "3220": { depot: "Loyang Depot", note: "", segs: [[511, 1134]] },
+  "3221": { depot: "Loyang Depot", note: "", segs: [[529, 1213]] },
+  "3222": { depot: "Loyang Depot", note: "P · 96 (Parking)", segs: [[567, 826], [1015, 1258]] },
+  "3223": { depot: "Loyang Depot", note: "", segs: [[739, 1407]] },
+  "3224": { depot: "Loyang Depot", note: "", segs: [[760, 1474]] },
+  "3225": { depot: "Loyang Depot", note: "", segs: [[799, 1329]] },
+  "3226": { depot: "Loyang Depot", note: "", segs: [[820, 1507]] },
+  "3227": { depot: "Loyang Depot", note: "", segs: [[866, 1434]] },
+  "3251": { depot: "Pasir Ris Int", note: "", segs: [[728, 1388]] },
+  "3252": { depot: "Pasir Ris Int", note: "", segs: [[758, 1317]] },
+  "3253": { depot: "Pasir Ris Int", note: "", segs: [[788, 1502]] },
+  "3254": { depot: "Pasir Ris Int", note: "", segs: [[802, 1359]] },
+  "3255": { depot: "Pasir Ris Int", note: "", segs: [[816, 1488]] },
+  "3256": { depot: "Pasir Ris Int", note: "", segs: [[830, 1445]] },
+  "3257": { depot: "Pasir Ris Int", note: "", segs: [[844, 1395]] },
+  "3258": { depot: "Pasir Ris Int", note: "", segs: [[858, 1408]] },
+  "3259": { depot: "Pasir Ris Int", note: "", segs: [[865, 1446]] },
+  "3260": { depot: "Pasir Ris Int", note: "", segs: [[900, 1527]] },
+  "3261": { depot: "Pasir Ris Int", note: "", segs: [[914, 1422]] },
+  "3262": { depot: "Pasir Ris Int", note: "Service 12 Pasir Ris Int Last bus", segs: [[925, 1550]] },
+  "3263": { depot: "Pasir Ris Int", note: "", segs: [[928, 1459]] },
+  "3264": { depot: "Pasir Ris Int", note: "", segs: [[942, 1515]] },
+  "3265": { depot: "Pasir Ris Int", note: "", segs: [[971, 1488]] },
+  "3266": { depot: "Pasir Ris Int", note: "", segs: [[1045, 1523]] },
+  "3267": { depot: "Pasir Ris Int", note: "Service 12 Kampong Bahru Ter Last Bus", segs: [[1045, 1539]] },
+  "3268": { depot: "Pasir Ris Int", note: "", segs: [[1106, 1539]] }
+};
+
 const ROUTES_DB = {
   "Route 68": {
     "1": S68_1XXX,
@@ -571,7 +611,7 @@ const ROUTES_DB = {
   "Route 12": {
     "1": S12_1XXX,
     "2": {},
-    "3": {},
+    "3": S12_3XXX,
     "4": {},
     "8": {}
   }
@@ -582,7 +622,7 @@ const I18N = {
     langBtn: "华语",
     headerTitle: "Duty & Salary",
     drawerTitle: "Routes & Search Drawer",
-    searchPlaceholder: "Search route or duty code (e.g. 1084, 1201, 2095)...",
+    searchPlaceholder: "Search route or duty code (e.g. 1084, 1201, 3210)...",
     drawerSearchPlaceholder: "Search route or duty number...",
     selectAll: "Select All",
     clearAll: "Clear All",
@@ -672,7 +712,7 @@ const I18N = {
     langBtn: "EN",
     headerTitle: "Duty & Salary",
     drawerTitle: "路线与班次抽屉",
-    searchPlaceholder: "搜索路线或卡号（如 1084, 1201, 2095）...",
+    searchPlaceholder: "搜索路线或卡号（如 1084, 1201, 3210）...",
     drawerSearchPlaceholder: "搜索路线或卡号...",
     selectAll: "全选",
     clearAll: "清空",
@@ -760,7 +800,7 @@ const I18N = {
   }
 };
 
-const STORAGE_KEY = "duty_salary_tracker_step1_v21";
+const STORAGE_KEY = "duty_salary_tracker_step1_v22";
 const OT_BASE_MINS = 7 * 60 + 20;
 const BASIC_DIVISOR_DAYS = 26;
 const DAILY_WORK_HOURS = OT_BASE_MINS / 60;
@@ -852,11 +892,7 @@ function toggleLang() {
   populateExtraDaySelect();
   renderAll();
   if (modalDateKey) {
-    const [y, m, d] = modalDateKey.split("-").map(Number);
-    const dCode = dayCodeForDate(y, m - 1, d);
-    document.getElementById("modalDateTitle").textContent = t().modalDateTitle(modalDateKey);
-    document.getElementById("modalRuleHint").innerHTML = `<span>Day Code: <b>${dCode} · ${t().dayCodeLabel(dCode)}</b></span><span>${state.selectedRoutes.join(", ") || "Route 68"}</span>`;
-    renderModalGrid(dCode);
+    refreshModalDayCodeState();
   }
 }
 
@@ -966,6 +1002,11 @@ function dayCodeForDate(y, m0, d) {
   if (dow === 5) return "2";
   if (dow === 6) return "3";
   return "1";
+}
+
+function effectiveDayCode(y, m0, d, isPh) {
+  if (isPh) return "4";
+  return dayCodeForDate(y, m0, d);
 }
 
 function getSearchableRoutes() {
@@ -1210,7 +1251,7 @@ function renderCalendar() {
       } else if (!c) {
         badgeHtml = `<div class="duty-badge off">${rec.isPh ? "PH" : "TBC"}</div>`;
       } else {
-        const dCode = dayCodeForDate(y, m0, dispNum);
+        const dCode = effectiveDayCode(y, m0, dispNum, !!rec.isPh);
         const found = lookupDuty(dCode, c);
         const cls = rec.is2x ? "warn2x" : "work";
         badgeHtml = `<div class="duty-badge ${cls}">${c}${rec.is2x ? " *" : ""}</div>`;
@@ -1380,22 +1421,32 @@ function renderModalGrid(dCode) {
   });
 }
 
-function openDutyModal(dateKey, dayNum) {
+function refreshModalDayCodeState() {
+  if (!modalDateKey) return;
   const tr = t();
+  const [y, m, d] = modalDateKey.split("-").map(Number);
+  const isPh = !!document.getElementById("modalPhToggle").checked;
+  const dCode = effectiveDayCode(y, m - 1, d, isPh);
+  const routeLabel = getSearchableRoutes().join(", ");
+  document.getElementById("modalDateTitle").textContent = tr.modalDateTitle(modalDateKey);
+  document.getElementById("modalRuleHint").innerHTML = `<span>Day Code: <b>${dCode} · ${tr.dayCodeLabel(dCode)}</b></span><span>${routeLabel}</span>`;
+  renderModalGrid(dCode);
+}
+
+function onModalPhToggleChange() {
+  refreshModalDayCodeState();
+}
+
+function openDutyModal(dateKey, dayNum) {
   modalDateKey = dateKey;
-  const [y, m, d] = dateKey.split("-").map(Number);
-  const dCode = dayCodeForDate(y, m - 1, d);
   const rec = state.schedule[dateKey] || { code: "", is2x: false, isPh: false, customWorkMins: null };
   modalSelectedCode = rec.code || "";
 
-  const routeLabel = getSearchableRoutes().join(", ");
-  document.getElementById("modalDateTitle").textContent = tr.modalDateTitle(dateKey);
-  document.getElementById("modalRuleHint").innerHTML = `<span>Day Code: <b>${dCode} · ${tr.dayCodeLabel(dCode)}</b></span><span>${routeLabel}</span>`;
   document.getElementById("modal2xToggle").checked = !!rec.is2x;
   document.getElementById("modalPhToggle").checked = !!rec.isPh;
   document.getElementById("modalCustomWorkInp").value = fmtMinsToDot(rec.customWorkMins);
 
-  renderModalGrid(dCode);
+  refreshModalDayCodeState();
   document.getElementById("dutyModal").classList.add("open");
 }
 
@@ -1494,7 +1545,7 @@ function renderSalary() {
       if (isP1) attDaysP1++;
       else attDaysP2++;
 
-      const dCode = dayCodeForDate(y, m0, d);
+      const dCode = effectiveDayCode(y, m0, d, !!rec.isPh);
       const found = lookupDuty(dCode, c);
       if (found || rec.customWorkMins) {
         const ot = calcDutyOtHrs(found ? found.duty : null, rec.customWorkMins);
