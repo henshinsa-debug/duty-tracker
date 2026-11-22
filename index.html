@@ -758,7 +758,7 @@ const I18N = {
   }
 };
 
-const STORAGE_KEY = "duty_salary_tracker_step1_v19";
+const STORAGE_KEY = "duty_salary_tracker_step1_v20";
 const OT_BASE_MINS = 7 * 60 + 20;
 const BASIC_DIVISOR_DAYS = 26;
 const DAILY_WORK_HOURS = OT_BASE_MINS / 60;
@@ -792,12 +792,12 @@ function defaultState() {
     schedule: {},
     extraOt: {},
     salaryConfig: {
-      basicSalary: 1964,
-      safeDriving: true,
+      basicSalary: 0,
+      safeDriving: false,
       mealAllowance: 0,
       ddDaysP1: 0,
       ddDaysP2: 0,
-      qosBonus: 100,
+      qosBonus: 0,
       extraAmount: 0
     },
     greenroad: {}
