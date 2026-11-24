@@ -359,18 +359,6 @@
     </div>
   </div>
 
-  <div id="tab-dutycards" class="tab-content">
-    <div class="card" style="padding:10px 12px; margin-bottom:10px;">
-      <div class="dc-top-controls">
-        <input type="text" id="dcSearchInput" placeholder="Search route or duty code (e.g. 1084, 1201, 4201)..." oninput="renderDutyCards()" />
-        <div class="route-bar" id="routeTabsBar"></div>
-        <div class="shift-filter-bar" id="dcShiftFilterBar"></div>
-      </div>
-    </div>
-    <div class="duty-pill-list" id="dutyCardPills"></div>
-    <div class="merged-dc-card" id="dutyCardDetail"></div>
-  </div>
-
   <div id="tab-greenroad" class="tab-content">
     <div class="summary-grid" style="grid-template-columns:1fr 1fr;">
       <div class="stat-card"><div class="stat-label" id="lblGrAvg">Year Average (From Oct)</div><div class="stat-val" id="grAvg">0.0</div></div>
@@ -383,6 +371,18 @@
       </h2>
       <div class="gr-week-list" id="grWeeksContainer"></div>
     </div>
+  </div>
+
+  <div id="tab-dutycards" class="tab-content">
+    <div class="card" style="padding:10px 12px; margin-bottom:10px;">
+      <div class="dc-top-controls">
+        <input type="text" id="dcSearchInput" placeholder="Search route or duty code (e.g. 1084, 1201, 4201)..." oninput="renderDutyCards()" />
+        <div class="route-bar" id="routeTabsBar"></div>
+        <div class="shift-filter-bar" id="dcShiftFilterBar"></div>
+      </div>
+    </div>
+    <div class="duty-pill-list" id="dutyCardPills"></div>
+    <div class="merged-dc-card" id="dutyCardDetail"></div>
   </div>
 </div>
 
@@ -422,8 +422,8 @@
 <nav>
   <button type="button" id="nav-schedule" class="active" onclick="switchTab('schedule', this)">Schedule</button>
   <button type="button" id="nav-salary" onclick="switchTab('salary', this)">Salary</button>
-  <button type="button" id="nav-dutycards" onclick="switchTab('dutycards', this)">Duty Card</button>
   <button type="button" id="nav-greenroad" onclick="switchTab('greenroad', this)">GreenRoad</button>
+  <button type="button" id="nav-dutycards" onclick="switchTab('dutycards', this)">Duty Card</button>
 </nav>
 
 <script>
