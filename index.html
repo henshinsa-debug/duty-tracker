@@ -359,7 +359,7 @@
   <div id="tab-dutycards" class="tab-content">
     <div class="card" style="padding:10px 12px; margin-bottom:10px;">
       <div class="dc-top-controls">
-        <input type="text" id="dcSearchInput" placeholder="Search route or duty code (e.g. 1084, 1201, 3210)..." oninput="renderDutyCards()" />
+        <input type="text" id="dcSearchInput" placeholder="Search route or duty code (e.g. 1084, 1201, 4201)..." oninput="renderDutyCards()" />
         <div class="route-bar" id="routeTabsBar"></div>
         <div class="shift-filter-bar" id="dcShiftFilterBar"></div>
       </div>
@@ -600,6 +600,52 @@ const S12_3XXX = {
   "3268": { depot: "Pasir Ris Int", note: "", segs: [[1106, 1539]] }
 };
 
+// Route 12 (Pasir Ris Trunk Sunday Schedule from 21-12-2025)
+const S12_4XXX = {
+  "4201": { depot: "Loyang Depot", note: "Service 12 Pasir Ris Int 1st Bus", segs: [[319, 824]] },
+  "4202": { depot: "Loyang Depot", note: "", segs: [[332, 841]] },
+  "4203": { depot: "Loyang Depot", note: "Service 12 Kampong Bahru Ter 1st Bus", segs: [[335, 921]] },
+  "4204": { depot: "Loyang Depot", note: "", segs: [[345, 791]] },
+  "4206": { depot: "Loyang Depot", note: "Service 12 Kallang Stn 1st Bus", segs: [[352, 959]] },
+  "4207": { depot: "Loyang Depot", note: "", segs: [[358, 778]] },
+  "4208": { depot: "Loyang Depot", note: "", segs: [[361, 1034]] },
+  "4209": { depot: "Loyang Depot", note: "", segs: [[363, 807]] },
+  "4210": { depot: "Loyang Depot", note: "", segs: [[371, 875]] },
+  "4211": { depot: "Loyang Depot", note: "", segs: [[377, 885]] },
+  "4212": { depot: "Loyang Depot", note: "", segs: [[384, 906]] },
+  "4213": { depot: "Loyang Depot", note: "", segs: [[397, 891]] },
+  "4214": { depot: "Loyang Depot", note: "", segs: [[410, 937]] },
+  "4215": { depot: "Loyang Depot", note: "", segs: [[423, 969]] },
+  "4216": { depot: "Loyang Depot", note: "", segs: [[438, 1146]] },
+  "4217": { depot: "Loyang Depot", note: "", segs: [[453, 953]] },
+  "4218": { depot: "Loyang Depot", note: "P · 215 (Parking)", segs: [[469, 865], [1081, 1251]] },
+  "4219": { depot: "Loyang Depot", note: "P · 219 (Parking)", segs: [[500, 740], [966, 1235]] },
+  "4220": { depot: "Loyang Depot", note: "", segs: [[589, 1208]] },
+  "4221": { depot: "Loyang Depot", note: "", segs: [[723, 1436]] },
+  "4222": { depot: "Loyang Depot", note: "", segs: [[769, 1486]] },
+  "4223": { depot: "Loyang Depot", note: "", segs: [[808, 1498]] },
+  "4224": { depot: "Loyang Depot", note: "", segs: [[823, 1423]] },
+  "4225": { depot: "Loyang Depot", note: "", segs: [[859, 1362]] },
+  "4226": { depot: "Loyang Depot", note: "", segs: [[868, 1515]] },
+  "4251": { depot: "Pasir Ris Int", note: "P", segs: [[535, 764], [1009, 1247]] },
+  "4252": { depot: "Pasir Ris Int", note: "", segs: [[763, 1338]] },
+  "4253": { depot: "Pasir Ris Int", note: "", segs: [[797, 1350]] },
+  "4254": { depot: "Pasir Ris Int", note: "", segs: [[805, 1510]] },
+  "4255": { depot: "Pasir Ris Int", note: "", segs: [[835, 1419]] },
+  "4256": { depot: "Pasir Ris Int", note: "", segs: [[844, 1376]] },
+  "4257": { depot: "Pasir Ris Int", note: "", segs: [[859, 1445]] },
+  "4258": { depot: "Pasir Ris Int", note: "", segs: [[889, 1530]] },
+  "4259": { depot: "Pasir Ris Int", note: "", segs: [[895, 1404]] },
+  "4260": { depot: "Pasir Ris Int", note: "Service 12 Pasir Ris Int Last Bus", segs: [[903, 1432]] },
+  "4261": { depot: "Pasir Ris Int", note: "", segs: [[918, 1545]] },
+  "4262": { depot: "Pasir Ris Int", note: "", segs: [[934, 1500]] },
+  "4263": { depot: "Pasir Ris Int", note: "", segs: [[955, 1458]] },
+  "4264": { depot: "Pasir Ris Int", note: "", segs: [[985, 1470]] },
+  "4265": { depot: "Pasir Ris Int", note: "", segs: [[998, 1484]] },
+  "4266": { depot: "Pasir Ris Int", note: "Service 12 Kampong Bahru Ter Last Bus", segs: [[1030, 1541]] },
+  "4267": { depot: "Pasir Ris Int", note: "", segs: [[1075, 1526]] }
+};
+
 const ROUTES_DB = {
   "Route 68": {
     "1": S68_1XXX,
@@ -612,7 +658,7 @@ const ROUTES_DB = {
     "1": S12_1XXX,
     "2": {},
     "3": S12_3XXX,
-    "4": {},
+    "4": S12_4XXX,
     "8": {}
   }
 };
@@ -622,7 +668,7 @@ const I18N = {
     langBtn: "华语",
     headerTitle: "Duty & Salary",
     drawerTitle: "Routes & Search Drawer",
-    searchPlaceholder: "Search route or duty code (e.g. 1084, 1201, 3210)...",
+    searchPlaceholder: "Search route or duty code (e.g. 1084, 1201, 4201)...",
     drawerSearchPlaceholder: "Search route or duty number...",
     selectAll: "Select All",
     clearAll: "Clear All",
@@ -712,7 +758,7 @@ const I18N = {
     langBtn: "EN",
     headerTitle: "Duty & Salary",
     drawerTitle: "路线与班次抽屉",
-    searchPlaceholder: "搜索路线或卡号（如 1084, 1201, 3210）...",
+    searchPlaceholder: "搜索路线或卡号（如 1084, 1201, 4201）...",
     drawerSearchPlaceholder: "搜索路线或卡号...",
     selectAll: "全选",
     clearAll: "清空",
