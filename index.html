@@ -22,7 +22,7 @@
     .tab-content.active { display:block; }
 
     .drawer-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:10px; overflow:hidden; }
-    .drawer-trigger { width:100%; background:none; border:none; color:var(--text); padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer; }
+    .drawer-trigger { width:100%; background:none; border:none; color:var(--text); padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer; text-align:left; }
     .drawer-sub { font-size:11px; color:var(--accent); font-weight:600; }
     .drawer-body { display:none; padding:0 12px 12px; border-top:1px solid rgba(148,163,184,0.18); }
     .drawer-body.open { display:block; padding-top:10px; }
@@ -38,7 +38,34 @@
 
     .cal-toolbar { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
     .nav-pills { display:flex; gap:6px; align-items:center; }
-    .pill-btn { background:#020617; color:#f8fafc; border:1px solid var(--border); padding:6px 12px; border-radius:14px; font-size:13px; font-weight:600; cursor:pointer; }
+    .pill-btn { background:#020617; color:#f8fafc; border:1px solid var(--border); padding:6px 12px; border-radius:14px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .dc-inline-trigger {
+      background:var(--surface);
+      color:var(--text);
+      border:1px solid var(--border);
+      padding:6px 11px;
+      border-radius:14px;
+      font-size:12.5px;
+      font-weight:700;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+    }
+    .dc-inline-trigger.open {
+      border-color:var(--accent);
+      box-shadow:0 0 0 1px rgba(16,185,129,0.35);
+    }
+    .dc-inline-panel {
+      display:none;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:11px 12px;
+      margin-bottom:10px;
+    }
+    .dc-inline-panel.open { display:block; }
     .month-banner { text-align:center; font-size:18px; font-weight:700; margin:4px 0 10px; letter-spacing:0.3px; }
 
     .cal-grid-wrap { border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--surface); margin-bottom:14px; }
@@ -119,19 +146,19 @@
     .shift-pill.pm.active { background:#d97706; border-color:#fbbf24; color:#0f172a; }
     .shift-pill.split.active { background:#7e22ce; border-color:#c084fc; color:#fff; }
 
-    .dc-top-controls { display:flex; flex-direction:column; gap:8px; }
+    .dc-top-controls { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
     .route-bar { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
-    .route-tab { padding:6px 12px; border-radius:9px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .route-tab { padding:6px 11px; border-radius:9px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
     .route-tab.active { background:var(--accent); border-color:var(--accent); color:#0f172a; }
 
-    .duty-pill-list { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:12px; max-height:210px; overflow-y:auto; padding:2px; }
+    .duty-pill-list { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; max-height:165px; overflow-y:auto; padding:2px; }
     .duty-pill {
-      padding:7px 10px;
+      padding:6px 9px;
       border-radius:9px;
       background:#162238;
       border:1.5px solid #4b5d7a;
       color:#f8fafc;
-      font-size:13px;
+      font-size:12.5px;
       font-weight:800;
       letter-spacing:0.2px;
       cursor:pointer;
@@ -169,23 +196,32 @@
     .t-tag { background:rgba(20,184,166,0.3); border:1px solid rgba(153,246,228,0.45); color:#ccfbf1; }
     .duty-pill.active .t-tag, .code-btn.selected .t-tag { background:rgba(255,255,255,0.26); border-color:rgba(255,255,255,0.45); color:#fff; }
 
-    .merged-dc-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; }
-    .merged-dc-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-    .merged-route-title { font-size:16px; font-weight:800; color:#f8fafc; }
-    .merged-duty-badge { background:#2563eb; border:1px solid #93c5fd; color:#fff; padding:4px 11px; border-radius:8px; font-size:13.5px; font-weight:800; letter-spacing:0.3px; white-space:nowrap; }
+    .merged-dc-card { background:var(--bg); border:1px solid var(--border); border-radius:11px; padding:12px; }
+    .merged-dc-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+    .merged-route-title { font-size:15px; font-weight:800; color:#f8fafc; }
+    .merged-duty-badge { background:#2563eb; border:1px solid #93c5fd; color:#fff; padding:4px 10px; border-radius:8px; font-size:13px; font-weight:800; letter-spacing:0.3px; white-space:nowrap; }
+    .dc-assign-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .dc-assign-btn { background:#059669; color:#fff; border:1px solid #34d399; padding:5px 10px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .dc-assign-btn:hover { background:#047857; }
     .dc-summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-    .dc-box { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 6px; text-align:center; }
-    .dc-box-label { font-size:11px; color:var(--muted); text-transform:uppercase; }
-    .dc-box-val { font-size:16px; font-weight:800; margin-top:4px; color:#f8fafc; }
+    .dc-box { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:9px 6px; text-align:center; }
+    .dc-box-label { font-size:10.5px; color:var(--muted); text-transform:uppercase; }
+    .dc-box-val { font-size:15.5px; font-weight:800; margin-top:4px; color:#f8fafc; }
     .dc-box-val.accent { color:var(--accent); }
     .dc-split-grid { display:grid; grid-template-columns:1fr; gap:8px; margin-top:10px; }
     @media (min-width:560px) { .dc-split-grid { grid-template-columns:repeat(2,1fr); } }
-    .dc-split-box { background:var(--bg); border:1px solid rgba(192,132,252,0.45); border-radius:10px; padding:10px; }
+    .dc-split-box { background:var(--surface); border:1px solid rgba(192,132,252,0.45); border-radius:10px; padding:9px 10px; }
     .dc-split-title { font-size:11px; color:#c084fc; font-weight:700; }
-    .dc-split-times { font-size:14px; font-weight:800; color:#f8fafc; margin-top:2px; }
+    .dc-split-times { font-size:13.5px; font-weight:800; color:#f8fafc; margin-top:2px; }
     .dc-split-sub { font-size:11px; color:var(--muted); margin-top:2px; }
     .dc-break-banner { grid-column:1 / -1; background:rgba(126,34,206,0.16); border:1px dashed rgba(192,132,252,0.65); border-radius:9px; padding:8px 10px; font-size:12px; color:#f3e8ff; font-weight:600; }
     .dc-meta-line { margin-top:10px; padding-top:8px; border-top:1px solid rgba(148,163,184,0.18); font-size:11px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+
+    /* Guide Drawer */
+    .guide-list { display:flex; flex-direction:column; gap:10px; font-size:12.5px; line-height:1.55; color:#cbd5e1; }
+    .guide-item { background:var(--bg); border:1px solid rgba(148,163,184,0.22); border-radius:9px; padding:10px 11px; }
+    .guide-item-title { font-size:13px; font-weight:800; color:#93c5fd; margin-bottom:4px; }
+    .guide-item ul { padding-left:16px; display:flex; flex-direction:column; gap:3px; }
 
     .gr-week-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(175px,1fr)); gap:8px; }
     .gr-week-item { background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 10px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
@@ -197,7 +233,7 @@
     .backup-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
     .backup-box { width:100%; min-height:86px; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px; font-size:12px; margin-top:8px; }
     nav { position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); display:flex; z-index:20; }
-    nav button { flex:1; background:none; border:none; color:var(--muted); padding:10px 4px; font-size:11px; font-weight:600; cursor:pointer; }
+    nav button { flex:1; background:none; border:none; color:var(--muted); padding:11px 4px; font-size:12px; font-weight:700; cursor:pointer; }
     nav button.active { color:var(--primary); }
     .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:flex-end; justify-content:center; z-index:50; }
     .modal-backdrop.open { display:flex; }
@@ -271,8 +307,9 @@
 </header>
 <div class="container">
   <div id="tab-schedule" class="tab-content active">
+    <!-- Top Drawer: Routes & Search -->
     <div class="drawer-card">
-      <button class="drawer-trigger" onclick="toggleRouteDrawer()">
+      <button type="button" class="drawer-trigger" onclick="toggleRouteDrawer()">
         <span><span id="drawerTitleText">Routes &amp; Search Drawer</span> <span class="drawer-sub" id="selectedRoutesBadge">(Route 68, Route 12)</span></span>
         <span id="drawerArrow">▼</span>
       </button>
@@ -290,13 +327,32 @@
       </div>
     </div>
 
+    <!-- Same-row Toolbar: Left < > today | Right Duty Card Lookup trigger -->
     <div class="cal-toolbar">
       <div class="nav-pills">
         <button type="button" class="pill-btn" onclick="stepMonth(-1)">&lt;</button>
         <button type="button" class="pill-btn" onclick="stepMonth(1)">&gt;</button>
         <button type="button" class="pill-btn" id="btnToday" onclick="goToday()">today</button>
       </div>
+      <button type="button" class="dc-inline-trigger" id="dcInlineTrigger" onclick="toggleDutyCardDrawer()">
+        <span id="dcDrawerTitleText">Duty Card Lookup</span>
+        <span class="drawer-sub" id="dcDrawerBadge">(Route 358)</span>
+        <span id="dcDrawerArrow">▼</span>
+      </button>
     </div>
+
+    <!-- Full-width Expandable Duty Card Panel -->
+    <div class="dc-inline-panel" id="dutyCardDrawerBody">
+      <div class="dc-top-controls">
+        <input type="text" id="dcSearchInput" placeholder="Search route or duty code (e.g. 1111, 2141, 3122, 4161)..." oninput="renderDutyCards()" />
+        <div class="route-bar" id="routeTabsBar"></div>
+        <div class="shift-filter-bar" id="dcShiftFilterBar"></div>
+      </div>
+      <div class="duty-pill-list" id="dutyCardPills"></div>
+      <div class="merged-dc-card" id="dutyCardDetail"></div>
+      <div class="msg-tip" id="dcAssignMsg"></div>
+    </div>
+
     <div class="month-banner" id="monthBannerTitle">November 2026</div>
 
     <div id="calendarContainer"></div>
@@ -338,6 +394,17 @@
       </div>
       <textarea id="backupBox" class="backup-box" placeholder="Backup JSON appears here when exported, or paste saved JSON here to restore..."></textarea>
       <div class="msg-tip" id="backupMsg"></div>
+    </div>
+
+    <!-- Collapsible User Guide / Rules Drawer below Data Backup -->
+    <div class="drawer-card" style="margin-bottom:14px;">
+      <button type="button" class="drawer-trigger" onclick="toggleGuideDrawer()">
+        <span><span id="guideTitleText">User Guide &amp; Rules</span> <span class="drawer-sub" id="guideSubBadge">(Tap to expand)</span></span>
+        <span id="guideArrow">▼</span>
+      </button>
+      <div class="drawer-body" id="guideDrawerBody">
+        <div class="guide-list" id="guideContentList"></div>
+      </div>
     </div>
   </div>
 
@@ -407,18 +474,6 @@
       <div class="gr-week-list" id="grWeeksContainer"></div>
     </div>
   </div>
-
-  <div id="tab-dutycards" class="tab-content">
-    <div class="card" style="padding:10px 12px; margin-bottom:10px;">
-      <div class="dc-top-controls">
-        <input type="text" id="dcSearchInput" placeholder="Search route or duty code (e.g. 1111, 2141, 3122, 4161)..." oninput="renderDutyCards()" />
-        <div class="route-bar" id="routeTabsBar"></div>
-        <div class="shift-filter-bar" id="dcShiftFilterBar"></div>
-      </div>
-    </div>
-    <div class="duty-pill-list" id="dutyCardPills"></div>
-    <div class="merged-dc-card" id="dutyCardDetail"></div>
-  </div>
 </div>
 
 <div class="modal-backdrop" id="dutyModal" onclick="if(event.target===this) closeModal()">
@@ -469,7 +524,6 @@
   <button type="button" id="nav-schedule" class="active" onclick="switchTab('schedule', this)">Schedule</button>
   <button type="button" id="nav-salary" onclick="switchTab('salary', this)">Salary</button>
   <button type="button" id="nav-greenroad" onclick="switchTab('greenroad', this)">GreenRoad</button>
-  <button type="button" id="nav-dutycards" onclick="switchTab('dutycards', this)">Duty Card</button>
 </nav>
 
 <script>
@@ -481,6 +535,9 @@ const AVAILABLE_ROUTES = [
   "Route 354/403",
   "PRFeeder"
 ];
+
+const JUMP_BUS_ROUTES = new Set(["Route 354/403", "PRFeeder"]);
+const DOUBLE_DECKER_ROUTES = new Set(["Route 68"]);
 
 function hmStrToMins(str) {
   const clean = String(str).trim().replace(":", ".");
@@ -969,6 +1026,9 @@ const I18N = {
     langBtn: "华语",
     headerTitle: "Duty & Salary",
     drawerTitle: "Routes & Search Drawer",
+    dcDrawerTitle: "Duty Card",
+    guideTitle: "User Guide & Rules",
+    guideSub: "(Tap to expand)",
     searchPlaceholder: "Search route or duty code (e.g. 1111, 2141, 3122, 4161)...",
     drawerSearchPlaceholder: "Search route or duty number...",
     selectAll: "Select All",
@@ -986,6 +1046,8 @@ const I18N = {
     extra20Group: "Extra OT x 2.0 (*)",
     daySuffix: d => `Day ${d}`,
     chipDay: d => `D${d} `,
+    assignToDayBtn: "Assign to Day",
+    assignSavedMsg: (num, d) => `Assigned Duty ${num} to Day ${d}.`,
     backupCard: "Data Backup",
     autoSave: "Local Auto-Save",
     backupDesc: "Export text to save in Notes/Chat, or paste back to restore.",
@@ -1056,13 +1118,40 @@ const I18N = {
     modalSave: "Confirm & Save",
     navSchedule: "Schedule",
     navSalary: "Salary",
-    navDutyCards: "Duty Card",
-    navGreenRoad: "GreenRoad"
+    navGreenRoad: "GreenRoad",
+    guideSections: [
+      {
+        title: "1. Scheduling & Auto Allowances",
+        items: [
+          "Tap any date cell on the calendar to pick a duty number or mark RD, HO, SL, and PH (+1 day).",
+          "Picking a duty from Route 354/403 or PRFeeder automatically ticks Jump Bus (+$3.00/day); picking from Route 68 automatically ticks Double-Decker (+$7.00/day). You can still toggle them manually.",
+          "Tap Duty Card next to the today button to check Sign-On / Sign-Off / Split Break times and assign a duty straight to a day."
+        ]
+      },
+      {
+        title: "2. Overtime (OT) & Time Input Format",
+        items: [
+          "Duty hours exceeding 7h 20m (7.33h) are automatically counted as Duty OT (1.5x, or 2.0x when WRD / OT 2.0x is ticked).",
+          "In Extra OT or Custom Net Work Hours, enter H.MM format (e.g. 1.30 = 1h 30m = 1.50h; 8.30 = 8h 30m) or plain minutes (e.g. 40 = 40 mins).",
+          "Days 1–15 are grouped into Period 1 and Days 16–30/31 into Period 2."
+        ]
+      },
+      {
+        title: "3. Salary Calculation & Data Backup",
+        items: [
+          "Daily Rate = Basic Salary ÷ 26; Hourly Rate = Daily Rate ÷ 7h 20m.",
+          "All records are saved automatically in your browser. Tap Export Data before clearing browser cache or switching devices."
+        ]
+      }
+    ]
   },
   zh: {
     langBtn: "EN",
     headerTitle: "Duty & Salary",
     drawerTitle: "路线与班次抽屉",
+    dcDrawerTitle: "班次卡速查",
+    guideTitle: "使用说明与规则教学",
+    guideSub: "(点击展开)",
     searchPlaceholder: "搜索路线或卡号（如 1111, 2141, 3122, 4161）...",
     drawerSearchPlaceholder: "搜索路线或卡号...",
     selectAll: "全选",
@@ -1080,6 +1169,8 @@ const I18N = {
     extra20Group: "额外 OT × 2.0 (*)",
     daySuffix: d => `${d}日`,
     chipDay: d => `${d}日 `,
+    assignToDayBtn: "填入排班",
+    assignSavedMsg: (num, d) => `已将班次 ${num} 填入 ${d} 日排班。`,
     backupCard: "数据备份",
     autoSave: "本地自动保存",
     backupDesc: "导出文本保存到备忘录/聊天，或粘贴回来恢复。",
@@ -1150,12 +1241,36 @@ const I18N = {
     modalSave: "确认并保存",
     navSchedule: "排班表",
     navSalary: "薪资",
-    navDutyCards: "班次卡",
-    navGreenRoad: "GreenRoad"
+    navGreenRoad: "GreenRoad",
+    guideSections: [
+      {
+        title: "1. 排班与自动津贴规则",
+        items: [
+          "点击日历任意日期可选择班次卡号，或快捷标记 RD、HO、SL 及 PH（+1天）。",
+          "选到 Route 354/403 或 PRFeeder 班次时，系统自动勾选跳车津贴（+$3.00/天）；选到 Route 68 班次时，自动勾选双层巴士津贴（+$7.00/天），仍支持手动调整。",
+          "点击「今天」右侧的「班次卡速查」，可查看 Sign-On / Sign-Off / 分班休息时长，并可直接选择日期一键「填入排班」。"
+        ]
+      },
+      {
+        title: "2. 加班（OT）与时间输入格式",
+        items: [
+          "班次工时超过 7小时20分（7.33小时）的部分自动计入 Duty OT（默认 1.5x；勾选 WRD / OT 2.0x 后按 2.0x 算）。",
+          "额外 OT 与临时净工时支持「小时.分钟」格式（如 1.30 = 1小时30分 = 1.50小时；8.30 = 8小时30分），也可直接填整数分钟（如 40）。",
+          "1–15 号自动归入上半月小计，16–30/31 号归入下半月小计。"
+        ]
+      },
+      {
+        title: "3. 薪资换算与本地数据备份",
+        items: [
+          "日薪 = 底薪 ÷ 26；时薪 = 日薪 ÷ 7小时20分。",
+          "所有数据自动保存在当前设备浏览器本地，清理浏览器缓存或更换手机前请先点击「导出数据」保存 JSON 文本。"
+        ]
+      }
+    ]
   }
 };
 
-const STORAGE_KEY = "duty_salary_tracker_step1_v25";
+const STORAGE_KEY = "duty_salary_tracker_step1_v27";
 const OT_BASE_MINS = 7 * 60 + 20;
 const BASIC_DIVISOR_DAYS = 26;
 const DAILY_WORK_HOURS = OT_BASE_MINS / 60;
@@ -1252,6 +1367,9 @@ function applyStaticTranslations() {
   document.getElementById("langToggleBtn").textContent = tr.langBtn;
   document.getElementById("appHeaderTitle").textContent = tr.headerTitle;
   document.getElementById("drawerTitleText").textContent = tr.drawerTitle;
+  document.getElementById("dcDrawerTitleText").textContent = tr.dcDrawerTitle;
+  document.getElementById("guideTitleText").textContent = tr.guideTitle;
+  document.getElementById("guideSubBadge").textContent = tr.guideSub;
   document.getElementById("schedRouteSearch").placeholder = tr.drawerSearchPlaceholder;
   document.getElementById("btnSelectAll").textContent = tr.selectAll;
   document.getElementById("btnClearAll").textContent = tr.clearAll;
@@ -1302,8 +1420,21 @@ function applyStaticTranslations() {
 
   document.getElementById("nav-schedule").textContent = tr.navSchedule;
   document.getElementById("nav-salary").textContent = tr.navSalary;
-  document.getElementById("nav-dutycards").textContent = tr.navDutyCards;
   document.getElementById("nav-greenroad").textContent = tr.navGreenRoad;
+
+  renderGuideContent();
+}
+
+function renderGuideContent() {
+  const tr = t();
+  const box = document.getElementById("guideContentList");
+  if (!box) return;
+  box.innerHTML = tr.guideSections.map(sec => `
+    <div class="guide-item">
+      <div class="guide-item-title">${sec.title}</div>
+      <ul>${sec.items.map(line => `<li>${line}</li>`).join("")}</ul>
+    </div>
+  `).join("");
 }
 
 function fmtHM(mins) {
@@ -1380,6 +1511,31 @@ function lookupDuty(code, dutyNum) {
   return null;
 }
 
+function routeAutoFlags(routeName) {
+  return {
+    isJb: JUMP_BUS_ROUTES.has(routeName),
+    isDd: DOUBLE_DECKER_ROUTES.has(routeName)
+  };
+}
+
+function isEffectiveJb(rec, y, m0, d) {
+  if (!rec) return false;
+  if (rec.isJb !== undefined) return !!rec.isJb;
+  const c = rec.code || "";
+  if (!c || c === "RD" || c === "HO" || c === "SL") return false;
+  const found = lookupDuty(effectiveDayCode(y, m0, d, !!rec.isPh), c);
+  return found ? JUMP_BUS_ROUTES.has(found.route) : false;
+}
+
+function isEffectiveDd(rec, y, m0, d) {
+  if (!rec) return false;
+  if (rec.isDd !== undefined) return !!rec.isDd;
+  const c = rec.code || "";
+  if (!c || c === "RD" || c === "HO" || c === "SL") return false;
+  const found = lookupDuty(effectiveDayCode(y, m0, d, !!rec.isPh), c);
+  return found ? DOUBLE_DECKER_ROUTES.has(found.route) : false;
+}
+
 function populateExtraDaySelect() {
   const sel = document.getElementById("extraDaySelect");
   if (!sel) return;
@@ -1449,6 +1605,23 @@ function toggleRouteDrawer() {
   const open = body.classList.toggle("open");
   arrow.textContent = open ? "▲" : "▼";
   if (open) renderRouteDrawerList();
+}
+
+function toggleDutyCardDrawer() {
+  const body = document.getElementById("dutyCardDrawerBody");
+  const arrow = document.getElementById("dcDrawerArrow");
+  const trig = document.getElementById("dcInlineTrigger");
+  const open = body.classList.toggle("open");
+  arrow.textContent = open ? "▲" : "▼";
+  if (trig) trig.classList.toggle("open", open);
+  if (open) renderDutyCards();
+}
+
+function toggleGuideDrawer() {
+  const body = document.getElementById("guideDrawerBody");
+  const arrow = document.getElementById("guideArrow");
+  const open = body.classList.toggle("open");
+  arrow.textContent = open ? "▲" : "▼";
 }
 
 function renderRouteDrawerList() {
@@ -1590,10 +1763,12 @@ function renderCalendar() {
     let topTagsHtml = "";
 
     if (inMonth && rec) {
+      const showJb = isEffectiveJb(rec, y, m0, dispNum);
+      const showDd = isEffectiveDd(rec, y, m0, dispNum);
       const tags = [];
       if (rec.isPh) tags.push(`<span class="cal-ph-tag">PH</span>`);
-      if (rec.isJb) tags.push(`<span class="cal-jb-tag">JB</span>`);
-      if (rec.isDd) tags.push(`<span class="cal-dd-tag">DD</span>`);
+      if (showJb) tags.push(`<span class="cal-jb-tag">JB</span>`);
+      if (showDd) tags.push(`<span class="cal-dd-tag">DD</span>`);
       if (tags.length) topTagsHtml = `<div class="cal-tag-group">${tags.join("")}</div>`;
 
       const c = rec.code || "";
@@ -1734,7 +1909,7 @@ function getModalDutyMap(dCode) {
       : Object.entries(rPools).filter(([k]) => k !== "8").map(([, v]) => v);
     for (const pool of poolsToCheck) {
       for (const [num, obj] of Object.entries(pool || {})) {
-        if (!map[num]) map[num] = obj;
+        if (!map[num]) map[num] = { route: rName, duty: obj };
       }
     }
   }
@@ -1762,7 +1937,8 @@ function renderModalGrid(dCode) {
   grid.innerHTML = "";
   const pool = getModalDutyMap(dCode);
   Object.keys(pool).sort().forEach(num => {
-    const st = classifyShift(pool[num]);
+    const entry = pool[num];
+    const st = classifyShift(entry.duty);
     if (!matchesShiftFilter(st, drawerShiftFilter)) return;
     const btn = document.createElement("button");
     btn.type = "button";
@@ -1770,6 +1946,9 @@ function renderModalGrid(dCode) {
     btn.innerHTML = `<span>${num}</span>${shiftBadgeHtml(st)}`;
     btn.onclick = () => {
       modalSelectedCode = num;
+      const flags = routeAutoFlags(entry.route);
+      document.getElementById("modalJbToggle").checked = flags.isJb;
+      document.getElementById("modalDdToggle").checked = flags.isDd;
       applySelection(true);
     };
     grid.appendChild(btn);
@@ -1794,11 +1973,12 @@ function onModalPhToggleChange() {
 
 function openDutyModal(dateKey, dayNum) {
   modalDateKey = dateKey;
+  const [y, m, d] = dateKey.split("-").map(Number);
   const rec = state.schedule[dateKey] || { code: "", is2x: false, isPh: false, isJb: false, isDd: false, customWorkMins: null };
   modalSelectedCode = rec.code || "";
 
-  document.getElementById("modalJbToggle").checked = !!rec.isJb;
-  document.getElementById("modalDdToggle").checked = !!rec.isDd;
+  document.getElementById("modalJbToggle").checked = isEffectiveJb(rec, y, m - 1, d);
+  document.getElementById("modalDdToggle").checked = isEffectiveDd(rec, y, m - 1, d);
   document.getElementById("modal2xToggle").checked = !!rec.is2x;
   document.getElementById("modalPhToggle").checked = !!rec.isPh;
   document.getElementById("modalCustomWorkInp").value = fmtMinsToDot(rec.customWorkMins);
@@ -1895,12 +2075,14 @@ function renderSalary() {
     const isP1 = d <= 15;
     const c = rec.code || "";
     const isDutyCode = c && c !== "RD" && c !== "HO" && c !== "SL";
+    const hasJb = isEffectiveJb(rec, y, m0, d);
+    const hasDd = isEffectiveDd(rec, y, m0, d);
 
-    if (rec.isJb) {
+    if (hasJb) {
       if (isP1) jbDaysP1++;
       else jbDaysP2++;
     }
-    if (rec.isDd) {
+    if (hasDd) {
       if (isP1) ddDaysP1++;
       else ddDaysP2++;
     }
@@ -2117,12 +2299,42 @@ function renderSalary() {
   document.getElementById("estimateGrossSalary").textContent = `$${grossAmt.toFixed(2)}`;
 }
 
+function assignDutyFromCard(routeName, dutyNum) {
+  const tr = t();
+  const daySel = document.getElementById("dcAssignDaySelect");
+  const d = Number(daySel ? daySel.value : 1) || 1;
+  const dateKey = `${state.year}-${String(state.month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  const prev = state.schedule[dateKey] || {};
+  const flags = routeAutoFlags(routeName);
+  state.schedule[dateKey] = {
+    code: dutyNum,
+    isJb: flags.isJb,
+    isDd: flags.isDd,
+    is2x: !!prev.is2x,
+    isPh: !!prev.isPh,
+    customWorkMins: prev.customWorkMins || null
+  };
+  saveState();
+  renderCalendar();
+  const msgEl = document.getElementById("dcAssignMsg");
+  if (msgEl) {
+    msgEl.textContent = tr.assignSavedMsg(dutyNum, d);
+    setTimeout(() => {
+      if (msgEl.textContent === tr.assignSavedMsg(dutyNum, d)) msgEl.textContent = "";
+    }, 3200);
+  }
+}
+
 function renderDutyCards() {
   const tr = t();
   if (!AVAILABLE_ROUTES.includes(activeRouteTab)) {
     activeRouteTab = AVAILABLE_ROUTES[0];
   }
   if (activeShiftFilter === "T") activeShiftFilter = "SPLIT";
+
+  const badgeEl = document.getElementById("dcDrawerBadge");
+  if (badgeEl) badgeEl.textContent = `(${activeRouteTab})`;
+
   const q = (document.getElementById("dcSearchInput").value || "").trim().toLowerCase();
   const rBar = document.getElementById("routeTabsBar");
   rBar.innerHTML = "";
@@ -2203,6 +2415,18 @@ function renderDutyCards() {
   const codeDayMap = { "1": "Mon–Thu", "2": "Fri", "3": "Sat", "4": "Sun", "8": "PH" };
   const shiftLabelMap = { "AM": "AM", "T": "T (S)", "PM": "PM", "SPLIT": "S" };
 
+  const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
+  const now = new Date();
+  const defaultDay = (now.getFullYear() === state.year && now.getMonth() === state.month)
+    ? now.getDate()
+    : 1;
+  const prevDaySel = document.getElementById("dcAssignDaySelect");
+  const chosenDay = prevDaySel ? Math.min(Number(prevDaySel.value) || defaultDay, daysInMonth) : defaultDay;
+  let dayOptsHtml = "";
+  for (let d = 1; d <= daysInMonth; d++) {
+    dayOptsHtml += `<option value="${d}" ${d === chosenDay ? "selected" : ""}>${tr.daySuffix(d)}</option>`;
+  }
+
   let splitHtml = "";
   if (cur.obj.segs.length > 1) {
     const gapMins = Math.max(0, cur.obj.segs[1][0] - cur.obj.segs[0][1]);
@@ -2223,8 +2447,14 @@ function renderDutyCards() {
 
   detailBox.innerHTML = `
     <div class="merged-dc-head">
-      <div class="merged-route-title">${activeRouteTab}</div>
-      <div class="merged-duty-badge">Duty ${cur.num}</div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div class="merged-route-title">${activeRouteTab}</div>
+        <div class="merged-duty-badge">Duty ${cur.num}</div>
+      </div>
+      <div class="dc-assign-bar">
+        <select id="dcAssignDaySelect" style="padding:4px 7px; font-size:12px;">${dayOptsHtml}</select>
+        <button type="button" class="dc-assign-btn" onclick="assignDutyFromCard('${activeRouteTab}', '${cur.num}')">${tr.assignToDayBtn}</button>
+      </div>
     </div>
     <div class="dc-summary-grid">
       <div class="dc-box"><div class="dc-box-label">${tr.signOn}</div><div class="dc-box-val">${firstOn}</div></div>
@@ -2346,7 +2576,6 @@ function switchTab(tabName, btnEl) {
   document.getElementById(`tab-${tabName}`).classList.add("active");
   document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
   if (btnEl) btnEl.classList.add("active");
-  if (tabName === "dutycards") renderDutyCards();
   if (tabName === "greenroad") renderGreenRoad();
   if (tabName === "salary") renderSalary();
 }
