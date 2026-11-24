@@ -94,6 +94,9 @@
     .sal-section-badge.p2 { background:rgba(168,85,247,0.16); border:1px solid rgba(168,85,247,0.4); color:#d8b4fe; }
     .sal-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(148,163,184,0.16); gap:8px; }
     .sal-row:last-child { border-bottom:none; }
+    .sal-row.stacked { flex-direction:column; align-items:stretch; gap:8px; }
+    .sal-row-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+    .sal-row-bottom { display:flex; justify-content:flex-end; align-items:center; gap:8px; }
     .sal-info { flex:1; min-width:0; }
     .sal-title { font-size:13.5px; font-weight:600; color:#f8fafc; }
     .sal-sub { font-size:11px; color:var(--muted); margin-top:2px; }
@@ -1714,6 +1717,7 @@ function renderSalary() {
       amt: `$${phWrdAmtP1.toFixed(2)}`
     },
     {
+      stacked: true,
       title: tr.ddP1Title,
       sub: tr.ddP1Sub(ddDaysP1, attDaysP1),
       ctrl: `<button type="button" class="mini-btn accent" onclick="syncDdDays(1, ${attDaysP1})">${tr.syncAttBtn(attDaysP1)}</button>
@@ -1742,6 +1746,7 @@ function renderSalary() {
       amt: `$${phWrdAmtP2.toFixed(2)}`
     },
     {
+      stacked: true,
       title: tr.ddP2Title,
       sub: tr.ddP2Sub(ddDaysP2, attDaysP2),
       ctrl: `<button type="button" class="mini-btn accent" onclick="syncDdDays(2, ${attDaysP2})">${tr.syncAttBtn(attDaysP2)}</button>
@@ -1762,16 +1767,34 @@ function renderSalary() {
     }
   ];
 
-  const renderRowHtml = r => `
-    <div class="sal-row">
-      <div class="sal-info">
-        <div class="sal-title">${r.title}</div>
-        <div class="sal-sub">${r.sub}</div>
+  const renderRowHtml = r => {
+    if (r.stacked) {
+      return `
+        <div class="sal-row stacked">
+          <div class="sal-row-top">
+            <div class="sal-info">
+              <div class="sal-title">${r.title}</div>
+              <div class="sal-sub">${r.sub}</div>
+            </div>
+            <div class="sal-amt">${r.amt}</div>
+          </div>
+          <div class="sal-row-bottom">
+            <div class="sal-ctrl">${r.ctrl}</div>
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="sal-row">
+        <div class="sal-info">
+          <div class="sal-title">${r.title}</div>
+          <div class="sal-sub">${r.sub}</div>
+        </div>
+        <div class="sal-ctrl">${r.ctrl}</div>
+        <div class="sal-amt">${r.amt}</div>
       </div>
-      <div class="sal-ctrl">${r.ctrl}</div>
-      <div class="sal-amt">${r.amt}</div>
-    </div>
-  `;
+    `;
+  };
 
   document.getElementById("salaryBaseRows").innerHTML = baseRows.map(renderRowHtml).join("");
   document.getElementById("salaryPeriod1Rows").innerHTML = p1Rows.map(renderRowHtml).join("");
