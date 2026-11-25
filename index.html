@@ -1270,7 +1270,7 @@ const I18N = {
   }
 };
 
-const STORAGE_KEY = "duty_salary_tracker_step1_v27";
+const STORAGE_KEY = "duty_salary_tracker_step1_v28";
 const OT_BASE_MINS = 7 * 60 + 20;
 const BASIC_DIVISOR_DAYS = 26;
 const DAILY_WORK_HOURS = OT_BASE_MINS / 60;
@@ -1497,15 +1497,12 @@ function getSearchableRoutes() {
 }
 
 function lookupDuty(code, dutyNum) {
+  const prefix = String(dutyNum || "").charAt(0);
+  const targetCode = ["1", "2", "3", "4"].includes(prefix) ? prefix : code;
   for (const rName of getSearchableRoutes()) {
     const rPools = ROUTES_DB[rName] || {};
-    if (rPools[code] && rPools[code][dutyNum]) {
-      return { route: rName, duty: rPools[code][dutyNum] };
-    }
-    for (const cKey of Object.keys(rPools)) {
-      if (rPools[cKey] && rPools[cKey][dutyNum]) {
-        return { route: rName, duty: rPools[cKey][dutyNum] };
-      }
+    if (rPools[targetCode] && rPools[targetCode][dutyNum]) {
+      return { route: rName, duty: rPools[targetCode][dutyNum] };
     }
   }
   return null;
@@ -1673,8 +1670,9 @@ function renderRouteDrawerList() {
   state.selectedRoutes.forEach(rName => {
     const rPools = ROUTES_DB[rName] || {};
     Object.entries(rPools).forEach(([code, pool]) => {
-      if (code === "8") return;
+      if (!["1", "2", "3", "4"].includes(code)) return;
       Object.entries(pool).forEach(([num, obj]) => {
+        if (!String(num).startsWith(code)) return;
         const st = classifyShift(obj);
         if (!matchesShiftFilter(st, drawerShiftFilter)) return;
         const hay = `${rName} ${num} ${obj.depot || ""} ${obj.note || ""} ${st}`.toLowerCase();
@@ -1902,15 +1900,15 @@ function renderExtraChips(ymKey, exList) {
 
 function getModalDutyMap(dCode) {
   const map = {};
+  const targetCode = String(dCode || "");
+  if (!["1", "2", "3", "4"].includes(targetCode)) return map;
+
   for (const rName of getSearchableRoutes()) {
     const rPools = ROUTES_DB[rName] || {};
-    const poolsToCheck = rPools[dCode] && Object.keys(rPools[dCode]).length
-      ? [rPools[dCode]]
-      : Object.entries(rPools).filter(([k]) => k !== "8").map(([, v]) => v);
-    for (const pool of poolsToCheck) {
-      for (const [num, obj] of Object.entries(pool || {})) {
-        if (!map[num]) map[num] = { route: rName, duty: obj };
-      }
+    const pool = rPools[targetCode] || {};
+    for (const [num, obj] of Object.entries(pool)) {
+      if (!String(num).startsWith(targetCode)) continue;
+      if (!map[num]) map[num] = { route: rName, duty: obj };
     }
   }
   return map;
@@ -1990,6 +1988,10 @@ function openDutyModal(dateKey, dayNum) {
 function quickSetCode(code) {
   modalSelectedCode = code;
   if (!code) {
+    document.getElementById("modalJbToggle").checked = false;
+    document.getElementById("modalDdToggle").checked = false;
+    document.getElementById("modal2xToggle").checked = false;
+    document.getElementById("modalPhToggle").checked = false;
     document.getElementById("modalCustomWorkInp").value = "";
   }
   applySelection(true);
@@ -2361,8 +2363,9 @@ function renderDutyCards() {
   const rPools = ROUTES_DB[activeRouteTab] || {};
   const entries = [];
   Object.entries(rPools).forEach(([code, pool]) => {
-    if (code === "8") return;
+    if (!["1", "2", "3", "4"].includes(code)) return;
     Object.entries(pool).forEach(([num, obj]) => {
+      if (!String(num).startsWith(code)) return;
       const st = classifyShift(obj);
       if (!matchesShiftFilter(st, activeShiftFilter)) return;
       const hay = `${activeRouteTab} ${num} ${obj.depot || ""} ${obj.note || ""} ${st}`.toLowerCase();
