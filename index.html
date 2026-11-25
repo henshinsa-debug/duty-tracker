@@ -310,7 +310,7 @@
     <!-- Top Drawer: Routes & Search -->
     <div class="drawer-card">
       <button type="button" class="drawer-trigger" onclick="toggleRouteDrawer()">
-        <span><span id="drawerTitleText">Routes &amp; Search Drawer</span> <span class="drawer-sub" id="selectedRoutesBadge">(Route 68, Route 12)</span></span>
+        <span><span id="drawerTitleText">Routes &amp; Search Drawer</span> <span class="drawer-sub" id="selectedRoutesBadge">(Route 12, Route 15, Route 68...)</span></span>
         <span id="drawerArrow">▼</span>
       </button>
       <div class="drawer-body" id="routeDrawerBody">
@@ -336,7 +336,7 @@
       </div>
       <button type="button" class="dc-inline-trigger" id="dcInlineTrigger" onclick="toggleDutyCardDrawer()">
         <span id="dcDrawerTitleText">Duty Card Lookup</span>
-        <span class="drawer-sub" id="dcDrawerBadge">(Route 358)</span>
+        <span class="drawer-sub" id="dcDrawerBadge">(Route 12)</span>
         <span id="dcDrawerArrow">▼</span>
       </button>
     </div>
@@ -528,9 +528,9 @@
 
 <script>
 const AVAILABLE_ROUTES = [
-  "Route 68",
   "Route 12",
   "Route 15",
+  "Route 68",
   "Route 358",
   "Route 359",
   "Route 354/403",
@@ -539,6 +539,18 @@ const AVAILABLE_ROUTES = [
 
 const JUMP_BUS_ROUTES = new Set(["Route 354/403", "PRFeeder"]);
 const DOUBLE_DECKER_ROUTES = new Set(["Route 68"]);
+const DOUBLE_DECKER_DUTY_CODES = new Set([
+  "1202", "1204", "1205", "1208", "1210", "1214", "1217", "1219", "1220", "1223", "1227", "1232",
+  "1251", "1256", "1261", "1263", "1267", "1270",
+  "2202", "2204", "2205", "2208", "2210", "2214", "2217", "2219", "2220", "2223", "2227", "2232",
+  "2251", "2256", "2261", "2263", "2267", "2270",
+  "3201", "3203", "3204", "3205", "3207", "3208", "3210", "3211", "3212", "3213", "3215", "3216",
+  "3217", "3218", "3219", "3220", "3221", "3223", "3224", "3225", "3226", "3251", "3252", "3254",
+  "3255", "3257", "3258", "3259", "3261", "3262", "3263", "3264", "3266", "3267", "3268",
+  "4201", "4202", "4203", "4204", "4206", "4207", "4209", "4210", "4212", "4213", "4215", "4216",
+  "4218", "4219", "4221", "4222", "4224", "4225", "4226", "4251", "4252", "4253", "4254", "4255",
+  "4256", "4257", "4258", "4260", "4261", "4263", "4264", "4265", "4266", "4267"
+]);
 
 function hmStrToMins(str) {
   const clean = String(str).trim().replace(":", ".");
@@ -548,6 +560,15 @@ function hmStrToMins(str) {
 
 function buildSegsFromPairs(pairs) {
   return pairs.map(([a, b]) => [hmStrToMins(a), hmStrToMins(b)]);
+}
+
+function clonePoolWithPrefix(pool, targetPrefix) {
+  return Object.fromEntries(
+    Object.entries(pool).map(([num, obj]) => [
+      `${targetPrefix}${String(num).slice(1)}`,
+      { ...obj, segs: obj.segs.map(([s, e]) => [s, e]) }
+    ])
+  );
 }
 
 const S68_1XXX = {
@@ -570,25 +591,7 @@ const S68_1XXX = {
   "1100": { depot: "Pasir Ris Int", note: "", segs: [[897, 1484]] }
 };
 
-const S68_2XXX = {
-  "2084": { depot: "Loyang Depot", note: "Service 68 Tampines Int 1st Bus", segs: [[312, 888]] },
-  "2085": { depot: "Loyang Depot", note: "Service 68 Pasir Ris Int 1st Bus", segs: [[319, 843]] },
-  "2086": { depot: "Loyang Depot", note: "", segs: [[327, 833]] },
-  "2087": { depot: "Loyang Depot", note: "", segs: [[329, 863]] },
-  "2088": { depot: "Loyang Depot", note: "", segs: [[339, 936]] },
-  "2089": { depot: "Loyang Depot", note: "", segs: [[348, 868]] },
-  "2090": { depot: "Loyang Depot", note: "", segs: [[358, 981]] },
-  "2091": { depot: "Loyang Depot", note: "", segs: [[374, 803], [987, 1237]] },
-  "2092": { depot: "Loyang Depot", note: "", segs: [[387, 748], [991, 1246]] },
-  "2093": { depot: "Loyang Depot", note: "", segs: [[388, 649], [911, 1256]] },
-  "2094": { depot: "Pasir Ris Int", note: "", segs: [[804, 1378]] },
-  "2095": { depot: "Pasir Ris Int", note: "", segs: [[834, 1435]] },
-  "2096": { depot: "Pasir Ris Int", note: "", segs: [[844, 1447]] },
-  "2097": { depot: "Pasir Ris Int", note: "", segs: [[866, 1459]] },
-  "2098": { depot: "Loyang Depot", note: "", segs: [[871, 1471]] },
-  "2099": { depot: "Pasir Ris Int", note: "Service 68 Pasir Ris Int Last Bus", segs: [[887, 1497]] },
-  "2100": { depot: "Pasir Ris Int", note: "", segs: [[897, 1484]] }
-};
+const S68_2XXX = clonePoolWithPrefix(S68_1XXX, "2");
 
 const S68_3XXX = {
   "3084": { depot: "Loyang Depot", note: "Service 68 Tampines Int 1st Bus", segs: [[312, 927]] },
@@ -682,6 +685,8 @@ const S12_1XXX = {
   "1272": { depot: "Pasir Ris Int", note: "", segs: [[1092, 1535]] },
   "1273": { depot: "Pasir Ris Int", note: "", segs: [[1115, 1517]] }
 };
+
+const S12_2XXX = clonePoolWithPrefix(S12_1XXX, "2");
 
 const S12_3XXX = {
   "3210": { depot: "Loyang Depot", note: "", segs: [[370, 810]] },
@@ -1068,16 +1073,9 @@ const SPRF_4XXX = {
 };
 
 const ROUTES_DB = {
-  "Route 68": {
-    "1": S68_1XXX,
-    "2": S68_2XXX,
-    "3": S68_3XXX,
-    "4": S68_4XXX,
-    "8": {}
-  },
   "Route 12": {
     "1": S12_1XXX,
-    "2": {},
+    "2": S12_2XXX,
     "3": S12_3XXX,
     "4": S12_4XXX,
     "8": {}
@@ -1087,6 +1085,13 @@ const ROUTES_DB = {
     "2": S15_2XXX,
     "3": S15_3XXX,
     "4": S15_4XXX,
+    "8": {}
+  },
+  "Route 68": {
+    "1": S68_1XXX,
+    "2": S68_2XXX,
+    "3": S68_3XXX,
+    "4": S68_4XXX,
     "8": {}
   },
   "Route 358": {
@@ -1127,7 +1132,7 @@ const I18N = {
     dcDrawerTitle: "Duty Card",
     guideTitle: "User Guide & Rules",
     guideSub: "(Tap to expand)",
-    searchPlaceholder: "Search route or duty code (e.g. 1051, 1111, 3051, 4051)...",
+    searchPlaceholder: "Search route or duty code (e.g. 1202, 1051, 1084, 1111)...",
     drawerSearchPlaceholder: "Search route or duty number...",
     selectAll: "Select All",
     clearAll: "Clear All",
@@ -1222,7 +1227,7 @@ const I18N = {
         title: "1. Scheduling & Auto Allowances",
         items: [
           "Tap any date cell on the calendar to pick a duty number or mark RD, HO, SL, and PH (+1 day).",
-          "Picking a duty from Route 354/403 or PRFeeder automatically ticks Jump Bus (+$3.00/day); picking from Route 68 automatically ticks Double-Decker (+$7.00/day). You can still toggle them manually.",
+          "Picking a duty from Route 354/403 or PRFeeder automatically ticks Jump Bus (+$3.00/day); picking Route 68 or a recorded Double-Decker duty code automatically ticks Double-Decker (+$7.00/day). You can still toggle them manually.",
           "Tap Duty Card next to the today button to check Sign-On / Sign-Off / Split Break times and assign a duty straight to a day."
         ]
       },
@@ -1250,7 +1255,7 @@ const I18N = {
     dcDrawerTitle: "班次卡速查",
     guideTitle: "使用说明与规则教学",
     guideSub: "(点击展开)",
-    searchPlaceholder: "搜索路线或卡号（如 1051, 1111, 3051, 4051）...",
+    searchPlaceholder: "搜索路线或卡号（如 1202, 1051, 1084, 1111）...",
     drawerSearchPlaceholder: "搜索路线或卡号...",
     selectAll: "全选",
     clearAll: "清空",
@@ -1345,7 +1350,7 @@ const I18N = {
         title: "1. 排班与自动津贴规则",
         items: [
           "点击日历任意日期可选择班次卡号，或快捷标记 RD、HO、SL 及 PH（+1天）。",
-          "选到 Route 354/403 或 PRFeeder 班次时，系统自动勾选跳车津贴（+$3.00/天）；选到 Route 68 班次时，自动勾选双层巴士津贴（+$7.00/天），仍支持手动调整。",
+          "选到 Route 354/403 或 PRFeeder 班次时自动勾选跳车津贴（+$3.00/天）；选到 Route 68 或已记录的双层巴士班次卡号时自动勾选双层巴士津贴（+$7.00/天），仍支持手动调整。",
           "点击「今天」右侧的「班次卡速查」，可查看 Sign-On / Sign-Off / 分班休息时长，并可直接选择日期一键「填入排班」。"
         ]
       },
@@ -1368,7 +1373,7 @@ const I18N = {
   }
 };
 
-const STORAGE_KEY = "duty_salary_tracker_step1_v29";
+const STORAGE_KEY = "duty_salary_tracker_step1_v31";
 const OT_BASE_MINS = 7 * 60 + 20;
 const BASIC_DIVISOR_DAYS = 26;
 const DAILY_WORK_HOURS = OT_BASE_MINS / 60;
@@ -1384,7 +1389,7 @@ const SHIFT_OPTIONS = [
 let state = loadState();
 let modalDateKey = null;
 let modalSelectedCode = "";
-let activeRouteTab = "Route 15";
+let activeRouteTab = AVAILABLE_ROUTES[0];
 let activeShiftFilter = "ALL";
 let drawerShiftFilter = "ALL";
 let activeDutyPill = null;
@@ -1413,8 +1418,8 @@ function defaultState() {
 }
 
 function normalizeSelectedRoutes(routes) {
-  const list = Array.isArray(routes) ? routes.filter(r => AVAILABLE_ROUTES.includes(r)) : [];
-  return [...new Set(list)];
+  const allowed = new Set(Array.isArray(routes) ? routes : []);
+  return AVAILABLE_ROUTES.filter(r => allowed.has(r));
 }
 
 function loadState() {
@@ -1606,10 +1611,11 @@ function lookupDuty(code, dutyNum) {
   return null;
 }
 
-function routeAutoFlags(routeName) {
+function routeAutoFlags(routeName, dutyNum) {
+  const codeStr = String(dutyNum || "").trim();
   return {
     isJb: JUMP_BUS_ROUTES.has(routeName),
-    isDd: DOUBLE_DECKER_ROUTES.has(routeName)
+    isDd: DOUBLE_DECKER_ROUTES.has(routeName) || DOUBLE_DECKER_DUTY_CODES.has(codeStr)
   };
 }
 
@@ -1627,6 +1633,7 @@ function isEffectiveDd(rec, y, m0, d) {
   if (rec.isDd !== undefined) return !!rec.isDd;
   const c = rec.code || "";
   if (!c || c === "RD" || c === "HO" || c === "SL") return false;
+  if (DOUBLE_DECKER_DUTY_CODES.has(String(c).trim())) return true;
   const found = lookupDuty(effectiveDayCode(y, m0, d, !!rec.isPh), c);
   return found ? DOUBLE_DECKER_ROUTES.has(found.route) : false;
 }
@@ -1732,6 +1739,7 @@ function renderRouteDrawerList() {
     cb.onchange = () => {
       if (cb.checked) {
         if (!state.selectedRoutes.includes(rName)) state.selectedRoutes.push(rName);
+        state.selectedRoutes = normalizeSelectedRoutes(state.selectedRoutes);
       } else {
         state.selectedRoutes = state.selectedRoutes.filter(x => x !== rName);
       }
@@ -2042,7 +2050,7 @@ function renderModalGrid(dCode) {
     btn.innerHTML = `<span>${num}</span>${shiftBadgeHtml(st)}`;
     btn.onclick = () => {
       modalSelectedCode = num;
-      const flags = routeAutoFlags(entry.route);
+      const flags = routeAutoFlags(entry.route, num);
       document.getElementById("modalJbToggle").checked = flags.isJb;
       document.getElementById("modalDdToggle").checked = flags.isDd;
       applySelection(true);
@@ -2405,7 +2413,7 @@ function assignDutyFromCard(routeName, dutyNum) {
   const d = Number(daySel ? daySel.value : 1) || 1;
   const dateKey = `${state.year}-${String(state.month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   const prev = state.schedule[dateKey] || {};
-  const flags = routeAutoFlags(routeName);
+  const flags = routeAutoFlags(routeName, dutyNum);
   state.schedule[dateKey] = {
     code: dutyNum,
     isJb: flags.isJb,
