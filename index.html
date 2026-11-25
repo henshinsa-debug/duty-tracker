@@ -344,7 +344,7 @@
     <!-- Full-width Expandable Duty Card Panel -->
     <div class="dc-inline-panel" id="dutyCardDrawerBody">
       <div class="dc-top-controls">
-        <input type="text" id="dcSearchInput" placeholder="Search route or duty code (e.g. 1111, 2141, 3122, 4161)..." oninput="renderDutyCards()" />
+        <input type="text" id="dcSearchInput" placeholder="Search route or duty code (e.g. 1051, 1111, 3051, 4051)..." oninput="renderDutyCards()" />
         <div class="route-bar" id="routeTabsBar"></div>
         <div class="shift-filter-bar" id="dcShiftFilterBar"></div>
       </div>
@@ -530,6 +530,7 @@
 const AVAILABLE_ROUTES = [
   "Route 68",
   "Route 12",
+  "Route 15",
   "Route 358",
   "Route 359",
   "Route 354/403",
@@ -766,6 +767,96 @@ const S12_4XXX = {
   "4267": { depot: "Pasir Ris Int", note: "", segs: [[1075, 1526]] }
 };
 
+// Route 15 (15-1.pdf Mon-Thu 1051-1082; 15-3.pdf Sat 3051-3071; 15-4.pdf Sun 4051-4070)
+const S15_1XXX = {
+  "1051": { depot: "Loyang Depot", note: "Service 15 Opp Eunos Stn 1st Bus", segs: buildSegsFromPairs([["05.14", "14.35"]]) },
+  "1052": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.21", "14.47"]]) },
+  "1053": { depot: "Loyang Depot", note: "Service 15 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.28", "15.14"]]) },
+  "1054": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.34", "16.09"]]) },
+  "1055": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.35", "15.25"]]) },
+  "1056": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.42", "16.00"]]) },
+  "1057": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.43", "13.47"]]) },
+  "1058": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.49", "15.36"]]) },
+  "1059": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.51", "16.26"]]) },
+  "1060": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.56", "15.01"]]) },
+  "1061": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.00", "13.22"], ["16.32", "20.10"]]) },
+  "1062": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.08", "11.14"], ["14.22", "19.25"]]) },
+  "1063": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.11", "09.53"], ["14.20", "20.30"]]) },
+  "1064": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.15", "11.14"], ["14.37", "19.38"]]) },
+  "1065": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.22", "11.23"], ["14.45", "19.46"]]) },
+  "1066": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.29", "11.38"], ["15.24", "19.54"]]) },
+  "1067": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.36", "14.12"], ["17.58", "20.35"]]) },
+  "1068": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.44", "11.45"], ["15.20", "20.26"]]) },
+  "1069": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.52", "11.52"], ["15.40", "20.06"]]) },
+  "1070": { depot: "Loyang Depot", note: "P · 25 (Parking)", segs: buildSegsFromPairs([["07.27", "12.28"], ["15.50", "20.51"]]) },
+  "1071": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["07.45", "12.49"], ["15.57", "20.58"]]) },
+  "1072": { depot: "Pasir Ris Int", note: "P · 21 (Parking)", segs: buildSegsFromPairs([["08.10", "13.09"], ["16.11", "19.42"]]) },
+  "1073": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["12.02", "23.40"]]) },
+  "1074": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.25", "23.52"]]) },
+  "1075": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.55", "24.06"]]) },
+  "1076": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.12", "24.30"]]) },
+  "1077": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.54", "24.52"]]) },
+  "1078": { depot: "Pasir Ris Int", note: "Service 15 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["15.02", "25.05"]]) },
+  "1079": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.19", "23.15"]]) },
+  "1080": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.35", "24.19"]]) },
+  "1081": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.43", "23.27"]]) },
+  "1082": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["16.04", "24.41"]]) }
+};
+
+const S15_2XXX = Object.fromEntries(
+  Object.entries(S15_1XXX).map(([num, obj]) => [
+    String(Number(num) + 1000),
+    { ...obj }
+  ])
+);
+
+const S15_3XXX = {
+  "3051": { depot: "Loyang Depot", note: "Service 15 Opp Eunos Stn 1st Bus", segs: buildSegsFromPairs([["05.14", "14.18"]]) },
+  "3052": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.24", "14.05"]]) },
+  "3053": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.34", "15.12"]]) },
+  "3054": { depot: "Loyang Depot", note: "Service 15 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.34", "15.39"]]) },
+  "3055": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.44", "15.26"]]) },
+  "3056": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.52", "15.53"]]) },
+  "3057": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["06.10", "13.39"]]) },
+  "3058": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["06.28", "13.52"]]) },
+  "3059": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["07.17", "17.37"]]) },
+  "3060": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["07.32", "18.32"]]) },
+  "3061": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["09.33", "20.30"]]) },
+  "3062": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.43", "23.47"]]) },
+  "3063": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.57", "23.59"]]) },
+  "3064": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.11", "24.11"]]) },
+  "3065": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.25", "24.24"]]) },
+  "3066": { depot: "Pasir Ris Int", note: "Service 15 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["14.39", "25.00"]]) },
+  "3067": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.49", "24.36"]]) },
+  "3068": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["14.53", "22.39"]]) },
+  "3069": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["15.13", "24.47"]]) },
+  "3070": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.40", "23.18"]]) },
+  "3071": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.51", "23.32"]]) }
+};
+
+const S15_4XXX = {
+  "4051": { depot: "Loyang Depot", note: "Service 15 Opp Eunos Stn 1st Bus", segs: buildSegsFromPairs([["05.14", "13.44"]]) },
+  "4052": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.24", "13.58"]]) },
+  "4053": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.36", "14.27"]]) },
+  "4054": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.48", "14.40"]]) },
+  "4055": { depot: "Loyang Depot", note: "Service 15 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.49", "15.09"]]) },
+  "4056": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["06.03", "15.39"]]) },
+  "4057": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["06.17", "15.54"]]) },
+  "4058": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["06.31", "14.13"]]) },
+  "4059": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["07.48", "17.35"]]) },
+  "4060": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["08.58", "19.04"]]) },
+  "4061": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.05", "23.07"]]) },
+  "4062": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.48", "23.35"]]) },
+  "4063": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.14", "23.57"]]) },
+  "4064": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.27", "24.09"]]) },
+  "4065": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.40", "24.21"]]) },
+  "4066": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["14.46", "24.32"]]) },
+  "4067": { depot: "Pasir Ris Int", note: "Service 15 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["15.06", "24.58"]]) },
+  "4068": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.34", "24.44"]]) },
+  "4069": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.48", "23.20"]]) },
+  "4070": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["16.25", "23.45"]]) }
+};
+
 const S358_1XXX = {
   "1111": { depot: "Loyang Depot", note: "Service 358 Blk 626 1st Bus", segs: buildSegsFromPairs([["04.44", "15.30"]]) },
   "1112": { depot: "Loyang Depot", note: "Service 358 East Loop & West Loop 1st Bus", segs: buildSegsFromPairs([["04.49", "15.22"]]) },
@@ -991,6 +1082,13 @@ const ROUTES_DB = {
     "4": S12_4XXX,
     "8": {}
   },
+  "Route 15": {
+    "1": S15_1XXX,
+    "2": S15_2XXX,
+    "3": S15_3XXX,
+    "4": S15_4XXX,
+    "8": {}
+  },
   "Route 358": {
     "1": S358_1XXX,
     "2": S358_2XXX,
@@ -1029,7 +1127,7 @@ const I18N = {
     dcDrawerTitle: "Duty Card",
     guideTitle: "User Guide & Rules",
     guideSub: "(Tap to expand)",
-    searchPlaceholder: "Search route or duty code (e.g. 1111, 2141, 3122, 4161)...",
+    searchPlaceholder: "Search route or duty code (e.g. 1051, 1111, 3051, 4051)...",
     drawerSearchPlaceholder: "Search route or duty number...",
     selectAll: "Select All",
     clearAll: "Clear All",
@@ -1152,7 +1250,7 @@ const I18N = {
     dcDrawerTitle: "班次卡速查",
     guideTitle: "使用说明与规则教学",
     guideSub: "(点击展开)",
-    searchPlaceholder: "搜索路线或卡号（如 1111, 2141, 3122, 4161）...",
+    searchPlaceholder: "搜索路线或卡号（如 1051, 1111, 3051, 4051）...",
     drawerSearchPlaceholder: "搜索路线或卡号...",
     selectAll: "全选",
     clearAll: "清空",
@@ -1270,7 +1368,7 @@ const I18N = {
   }
 };
 
-const STORAGE_KEY = "duty_salary_tracker_step1_v28";
+const STORAGE_KEY = "duty_salary_tracker_step1_v29";
 const OT_BASE_MINS = 7 * 60 + 20;
 const BASIC_DIVISOR_DAYS = 26;
 const DAILY_WORK_HOURS = OT_BASE_MINS / 60;
@@ -1286,7 +1384,7 @@ const SHIFT_OPTIONS = [
 let state = loadState();
 let modalDateKey = null;
 let modalSelectedCode = "";
-let activeRouteTab = "Route 358";
+let activeRouteTab = "Route 15";
 let activeShiftFilter = "ALL";
 let drawerShiftFilter = "ALL";
 let activeDutyPill = null;
