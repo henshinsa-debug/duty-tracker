@@ -1,0 +1,2932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Duty &amp; Salary Tracker</title>
+  <style>
+    :root {
+      --bg:#0f172a; --surface:#1e293b; --surface2:#334155; --border:#3b475c;
+      --text:#f8fafc; --muted:#94a3b8; --primary:#3b82f6; --accent:#10b981;
+      --warn:#eab308; --danger:#ef4444;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+    body { background:var(--bg); color:var(--text); padding-bottom:84px; }
+    header { background:var(--surface); padding:12px 16px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:20; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    header h1 { font-size:17px; font-weight:700; white-space:nowrap; }
+    .controls { display:flex; gap:6px; align-items:center; }
+    select, input { background:var(--bg); color:var(--text); border:1px solid var(--border); padding:6px 8px; border-radius:8px; font-size:13px; outline:none; }
+    .lang-btn { background:#1d4ed8; color:#fff; border:1px solid #60a5fa; padding:6px 10px; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap; }
+    .container { max-width:900px; margin:0 auto; padding:12px; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+
+    .drawer-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:10px; overflow:hidden; }
+    .drawer-trigger { width:100%; background:none; border:none; color:var(--text); padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer; text-align:left; }
+    .drawer-sub { font-size:11px; color:var(--accent); font-weight:600; }
+    .drawer-body { display:none; padding:0 12px 12px; border-top:1px solid rgba(148,163,184,0.18); }
+    .drawer-body.open { display:block; padding-top:10px; }
+    .drawer-search { width:100%; margin-bottom:8px; }
+    .drawer-actions { display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
+    .mini-btn { background:var(--bg); border:1px solid var(--border); color:var(--text); padding:4px 9px; border-radius:7px; font-size:11px; font-weight:600; cursor:pointer; }
+    .mini-btn.accent { border-color:rgba(16,185,129,0.55); color:#6ee7b7; background:rgba(16,185,129,0.12); }
+    .route-check-list { max-height:175px; overflow-y:auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:6px; }
+    .route-check-item { display:flex; align-items:center; gap:6px; background:var(--bg); border:1px solid var(--border); padding:6px 8px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; }
+    .drawer-shift-row { margin-top:10px; padding-top:8px; border-top:1px solid rgba(148,163,184,0.18); }
+    .drawer-duty-preview { margin-top:8px; display:flex; flex-wrap:wrap; gap:5px; max-height:110px; overflow-y:auto; }
+    .drawer-duty-chip { background:var(--bg); border:1px solid var(--border); color:#e2e8f0; padding:3px 7px; border-radius:6px; font-size:11px; font-weight:600; white-space:nowrap; }
+
+    .cal-toolbar { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+    .nav-pills { display:flex; gap:6px; align-items:center; }
+    .pill-btn { background:#020617; color:#f8fafc; border:1px solid var(--border); padding:6px 12px; border-radius:14px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .dc-inline-trigger {
+      background:var(--surface);
+      color:var(--text);
+      border:1px solid var(--border);
+      padding:6px 11px;
+      border-radius:14px;
+      font-size:12.5px;
+      font-weight:700;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+    }
+    .dc-inline-trigger.open {
+      border-color:var(--accent);
+      box-shadow:0 0 0 1px rgba(16,185,129,0.35);
+    }
+    .dc-inline-panel {
+      display:none;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:11px 12px;
+      margin-bottom:10px;
+    }
+    .dc-inline-panel.open { display:block; }
+    .month-banner { text-align:center; font-size:18px; font-weight:700; margin:4px 0 10px; letter-spacing:0.3px; }
+
+    .cal-grid-wrap { border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--surface); margin-bottom:14px; width:100%; }
+    .cal-dow-row { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); background:#1e3a5f; border-bottom:1px solid var(--border); }
+    .cal-dow { text-align:center; padding:6px 2px; font-size:12px; font-weight:700; color:#f8fafc; border-right:1px solid rgba(255,255,255,0.12); min-width:0; }
+    .cal-dow:last-child { border-right:none; }
+    .cal-body { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }
+    .cal-cell { min-height:76px; min-width:0; overflow:hidden; border-right:1px solid rgba(148,163,184,0.22); border-bottom:1px solid rgba(148,163,184,0.22); padding:3px; display:flex; flex-direction:column; justify-content:space-between; background:rgba(15,23,42,0.72); position:relative; }
+    .cal-cell:nth-child(7n) { border-right:none; }
+    .cal-cell.in-month { cursor:pointer; }
+    .cal-cell.out-month { opacity:0.32; background:rgba(15,23,42,0.35); cursor:not-allowed; }
+    .cal-cell.is-today { outline:2px solid rgba(248,250,252,0.65); outline-offset:-2px; }
+    .cal-day-top { display:flex; justify-content:space-between; align-items:center; gap:2px; min-height:16px; min-width:0; }
+    .cal-jb-tag { font-size:9px; font-weight:800; padding:1px 3.5px; border-radius:3px; background:#0d9488; color:#ccfbf1; line-height:1.2; white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+    .cal-dd-tag { font-size:9px; font-weight:800; padding:1px 3.5px; border-radius:3px; background:#7c3aed; color:#f3e8ff; line-height:1.2; white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+    .cal-jd-tag { font-size:9px; font-weight:800; padding:1px 3.5px; border-radius:3px; background:linear-gradient(90deg,#0d9488,#7c3aed); color:#fff; line-height:1.2; white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+    .cal-day-num { text-align:right; font-size:11.5px; font-weight:700; color:#e2e8f0; line-height:1.15; margin-left:auto; flex-shrink:0; }
+    .cal-cell.out-month .cal-day-num { color:var(--muted); }
+
+    .duty-badge { border-radius:4px; padding:3px 2px; text-align:center; font-size:11px; font-weight:800; line-height:1.2; color:#fff; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .duty-badge.work { background:#15803d; border:1px solid #22c55e; color:#fff; }
+    .duty-badge.wrd-only { background:#d97706; border:1px solid #fbbf24; color:#0f172a; }
+    .duty-badge.ph-only { background:#4338ca; border:1px solid #818cf8; color:#fff; }
+    .duty-badge.ph-wrd-both { background:#be185d; border:1px solid #f472b6; color:#fff; }
+    .duty-badge.rd { background:#b91c1c; border:1px solid #ef4444; }
+    .duty-badge.ho { background:#0284c7; border:1px solid #38bdf8; }
+    .duty-badge.sl { background:#c2410c; border:1px solid #fb923c; color:#fff; }
+    .duty-badge.off { background:#475569; color:#f1f5f9; border:1px solid #64748b; }
+
+    .cal-ot-sub { font-size:9px; text-align:center; color:#cbd5e1; margin-top:2px; font-weight:700; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cal-ot-sub.is2x-wrd { color:#fbbf24; }
+    .cal-ot-sub.is2x-ph { color:#a5b4fc; }
+    .cal-ot-sub.is2x-both { color:#f9a8d4; }
+
+    .summary-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:14px; }
+    @media (min-width:520px) { .summary-grid { grid-template-columns:repeat(4,1fr); } }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:11px 8px; text-align:center; }
+    .stat-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; }
+    .stat-val { font-size:19px; font-weight:700; margin-top:4px; color:var(--accent); }
+    .stat-val.blue { color:var(--primary); }
+    .stat-val.amber { color:var(--warn); }
+    .stat-val.purple { color:#c084fc; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:14px; }
+    .card h2 { font-size:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+
+    .extra-form-grid { display:flex; flex-direction:column; gap:8px; }
+    .extra-input-row { display:grid; grid-template-columns:96px 1fr; gap:8px; }
+    .extra-input-row select, .extra-input-row input { width:100%; height:38px; font-size:13.5px; font-weight:600; }
+    .extra-btn-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .extra-btn-row button { width:100%; height:38px; font-size:13.5px; font-weight:800; }
+    .extra-hint { font-size:11px; color:var(--muted); margin-top:8px; line-height:1.4; }
+    .extra-group { margin-top:12px; padding-top:10px; border-top:1px solid rgba(148,163,184,0.16); }
+    .extra-group-title { font-size:12px; font-weight:800; color:#cbd5e1; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+    .extra-period-sub { font-size:10.5px; font-weight:700; color:var(--muted); margin:6px 0 5px; display:flex; justify-content:space-between; align-items:center; }
+    .extra-chips-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
+    @media (min-width:520px) { .extra-chips-grid { grid-template-columns:repeat(3,1fr); } }
+    .extra-empty { font-size:11.5px; color:var(--muted); padding:6px 2px; }
+    .chip {
+      background:var(--bg);
+      border:1px solid var(--border);
+      padding:7px 9px;
+      border-radius:9px;
+      font-size:12px;
+      font-weight:600;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:6px;
+      min-width:0;
+    }
+    .chip-main { display:flex; align-items:center; gap:5px; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .chip-day-tag { background:rgba(59,130,246,0.2); color:#93c5fd; padding:1px 5px; border-radius:5px; font-size:11px; font-weight:800; flex-shrink:0; }
+    .chip.chip-2x { border-color:rgba(234,179,8,0.55); color:#fde047; }
+    .chip.chip-2x .chip-day-tag { background:rgba(234,179,8,0.22); color:#fde047; }
+    .chip-min-hint { font-size:10.5px; color:var(--muted); font-weight:500; }
+    .chip-del { color:#f87171; cursor:pointer; font-weight:800; font-size:14px; line-height:1; padding:0 2px; flex-shrink:0; }
+
+    .sal-basic-bar { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .sal-basic-bar label { display:flex; flex-direction:column; gap:3px; flex:1; }
+    .sal-basic-title { font-size:13px; font-weight:700; color:#f8fafc; }
+    .sal-basic-hint { font-size:11px; color:var(--muted); }
+    .sal-basic-input { width:130px; text-align:right; font-size:15px; font-weight:700; padding:8px 10px; }
+    .sal-section-badge { margin-top:12px; margin-bottom:4px; padding:6px 10px; border-radius:8px; font-size:12px; font-weight:800; display:flex; justify-content:space-between; align-items:center; }
+    .sal-section-badge.p1 { background:rgba(59,130,246,0.16); border:1px solid rgba(59,130,246,0.4); color:#93c5fd; }
+    .sal-section-badge.p2 { background:rgba(168,85,247,0.16); border:1px solid rgba(168,85,247,0.4); color:#d8b4fe; }
+    .sal-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(148,163,184,0.16); gap:8px; }
+    .sal-row:last-child { border-bottom:none; }
+    .sal-info { flex:1; min-width:0; }
+    .sal-title { font-size:13.5px; font-weight:600; color:#f8fafc; }
+    .sal-sub { font-size:11px; color:var(--muted); margin-top:2px; line-height:1.4; }
+    .sal-ctrl { display:flex; align-items:center; gap:5px; flex-wrap:wrap; justify-content:flex-end; }
+    .sal-input { width:72px; text-align:right; font-weight:600; }
+    .sal-tag { font-size:12px; font-weight:700; color:#cbd5e1; white-space:nowrap; }
+    .sal-auto-badge { font-size:10px; font-weight:800; padding:2px 6px; border-radius:6px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.45); color:#6ee7b7; white-space:nowrap; }
+    .sal-pending-badge { font-size:10px; font-weight:800; padding:2px 6px; border-radius:6px; background:rgba(234,179,8,0.14); border:1px solid rgba(234,179,8,0.45); color:#fde047; white-space:nowrap; }
+    .sal-amt { width:90px; text-align:right; font-weight:800; font-size:14px; color:var(--accent); white-space:nowrap; }
+    .sal-qp-meta { display:flex; flex-direction:column; gap:4px; margin-top:4px; }
+    .sal-qp-line { font-size:11.5px; color:#cbd5e1; line-height:1.4; }
+    .sal-qp-subline { font-size:11px; color:var(--muted); line-height:1.4; }
+    .sal-qp-right { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
+    .sal-qp-pill-group { display:inline-flex; align-items:center; gap:6px; flex-wrap:nowrap; }
+    .split-pay-cards { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+    .split-pay-box { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px; }
+    .split-pay-label { font-size:11px; color:var(--muted); font-weight:700; }
+    .split-pay-val { font-size:17px; font-weight:800; margin-top:3px; color:#f8fafc; }
+    .split-pay-sub { font-size:10px; color:var(--muted); margin-top:2px; line-height:1.35; }
+    .allow-ot-banner { background:rgba(30,58,138,0.55); border:1px solid rgba(96,165,250,0.45); border-radius:12px; padding:13px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:10px; }
+    .total-banner { background:linear-gradient(135deg,#1e3a8a,#0f766e); border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:10px; }
+
+    .shift-filter-bar { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .shift-pill { padding:5px 12px; border-radius:8px; background:var(--bg); border:1px solid #475569; color:#f1f5f9; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .shift-pill.active { background:var(--primary); border-color:#60a5fa; color:#fff; }
+    .shift-pill.am.active { background:#0284c7; border-color:#38bdf8; color:#fff; }
+    .shift-pill.pm.active { background:#d97706; border-color:#fbbf24; color:#0f172a; }
+    .shift-pill.split.active { background:#7e22ce; border-color:#c084fc; color:#fff; }
+
+    .dc-top-controls { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+    .route-bar { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .route-tab { padding:6px 11px; border-radius:9px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .route-tab.active { background:var(--accent); border-color:var(--accent); color:#0f172a; }
+
+    .duty-pill-list { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; max-height:165px; overflow-y:auto; padding:2px; }
+    .duty-pill {
+      padding:6px 9px;
+      border-radius:9px;
+      background:#162238;
+      border:1.5px solid #4b5d7a;
+      color:#f8fafc;
+      font-size:12.5px;
+      font-weight:800;
+      letter-spacing:0.2px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      white-space:nowrap;
+      flex-shrink:0;
+      box-shadow:0 1px 3px rgba(0,0,0,0.35);
+      transition:transform 0.08s ease, background 0.12s ease, border-color 0.12s ease;
+    }
+    .duty-pill:hover { border-color:#93c5fd; background:#1d2e4b; }
+    .duty-pill.active {
+      background:#2563eb;
+      border-color:#93c5fd;
+      color:#ffffff;
+      box-shadow:0 0 0 2px rgba(59,130,246,0.45);
+    }
+    .am-tag, .pm-tag, .split-tag, .t-tag {
+      font-size:10px;
+      padding:1px 5px;
+      border-radius:5px;
+      font-weight:800;
+      letter-spacing:0.2px;
+      white-space:nowrap;
+      flex-shrink:0;
+      line-height:1.35;
+    }
+    .am-tag { background:rgba(14,165,233,0.28); border:1px solid rgba(125,211,252,0.45); color:#bae6fd; }
+    .duty-pill.active .am-tag, .code-btn.selected .am-tag { background:rgba(255,255,255,0.26); border-color:rgba(255,255,255,0.45); color:#fff; }
+    .pm-tag { background:rgba(245,158,11,0.28); border:1px solid rgba(253,224,71,0.45); color:#fef08a; }
+    .duty-pill.active .pm-tag, .code-btn.selected .pm-tag { background:rgba(255,255,255,0.26); border-color:rgba(255,255,255,0.45); color:#fff; }
+    .split-tag { background:rgba(168,85,247,0.3); border:1px solid rgba(216,180,254,0.45); color:#f3e8ff; }
+    .duty-pill.active .split-tag, .code-btn.selected .split-tag { background:rgba(255,255,255,0.26); border-color:rgba(255,255,255,0.45); color:#fff; }
+    .t-tag { background:rgba(20,184,166,0.3); border:1px solid rgba(153,246,228,0.45); color:#ccfbf1; }
+    .duty-pill.active .t-tag, .code-btn.selected .t-tag { background:rgba(255,255,255,0.26); border-color:rgba(255,255,255,0.45); color:#fff; }
+
+    .merged-dc-card { background:var(--bg); border:1px solid var(--border); border-radius:11px; padding:12px; }
+    .merged-dc-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+    .merged-route-title { font-size:15px; font-weight:800; color:#f8fafc; }
+    .merged-duty-badge { background:#2563eb; border:1px solid #93c5fd; color:#fff; padding:4px 10px; border-radius:8px; font-size:13px; font-weight:800; letter-spacing:0.3px; white-space:nowrap; }
+    .dc-assign-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .dc-assign-btn { background:#059669; color:#fff; border:1px solid #34d399; padding:5px 10px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .dc-assign-btn:hover { background:#047857; }
+    .dc-summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .dc-box { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:9px 6px; text-align:center; }
+    .dc-box-label { font-size:10.5px; color:var(--muted); text-transform:uppercase; }
+    .dc-box-val { font-size:15.5px; font-weight:800; margin-top:4px; color:#f8fafc; }
+    .dc-box-val.accent { color:var(--accent); }
+    .dc-split-grid { display:grid; grid-template-columns:1fr; gap:8px; margin-top:10px; }
+    @media (min-width:560px) { .dc-split-grid { grid-template-columns:repeat(2,1fr); } }
+    .dc-split-box { background:var(--surface); border:1px solid rgba(192,132,252,0.45); border-radius:10px; padding:9px 10px; }
+    .dc-split-title { font-size:11px; color:#c084fc; font-weight:700; }
+    .dc-split-times { font-size:13.5px; font-weight:800; color:#f8fafc; margin-top:2px; }
+    .dc-split-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+    .dc-break-banner { grid-column:1 / -1; background:rgba(126,34,206,0.16); border:1px dashed rgba(192,132,252,0.65); border-radius:9px; padding:8px 10px; font-size:12px; color:#f3e8ff; font-weight:600; }
+    .dc-meta-line { margin-top:10px; padding-top:8px; border-top:1px solid rgba(148,163,184,0.18); font-size:11px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+
+    .guide-list { display:flex; flex-direction:column; gap:10px; font-size:12.5px; line-height:1.55; color:#cbd5e1; }
+    .guide-item { background:var(--bg); border:1px solid rgba(148,163,184,0.22); border-radius:9px; padding:10px 11px; }
+    .guide-item-title { font-size:13px; font-weight:800; color:#93c5fd; margin-bottom:4px; }
+    .guide-item ul { padding-left:16px; display:flex; flex-direction:column; gap:3px; }
+
+    .gr-week-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(175px,1fr)); gap:8px; }
+    .gr-week-item { background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 10px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .gr-week-meta { display:flex; flex-direction:column; gap:2px; }
+    .gr-week-no { font-size:12px; font-weight:700; color:#f8fafc; }
+    .gr-week-range { font-size:11px; color:var(--muted); }
+    .gr-week-item input { width:62px; text-align:center; padding:6px; font-weight:700; }
+
+    .backup-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .backup-box { width:100%; min-height:86px; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px; font-size:12px; margin-top:8px; }
+    nav { position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); display:flex; z-index:20; }
+    nav button { flex:1; background:none; border:none; color:var(--muted); padding:11px 4px; font-size:12px; font-weight:700; cursor:pointer; }
+    nav button.active { color:var(--primary); }
+    .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:flex-end; justify-content:center; z-index:50; }
+    .modal-backdrop.open { display:flex; }
+    .modal { background:var(--surface); width:100%; max-width:500px; border-radius:16px 16px 0 0; padding:18px; max-height:85vh; overflow-y:auto; }
+    .modal h3 { font-size:16px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+    .rule-hint { font-size:12px; color:#93c5fd; background:rgba(59,130,246,0.14); border:1px solid rgba(59,130,246,0.35); padding:8px 10px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+
+    .quick-status-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+    .quick-status-btn { border:none; border-radius:10px; padding:12px 4px; font-size:13px; font-weight:800; cursor:pointer; text-align:center; letter-spacing:0.2px; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,0.28); }
+    .quick-status-btn.rd { background:#dc2626; color:#fff; border:1px solid #f87171; }
+    .quick-status-btn.ho { background:#0284c7; color:#fff; border:1px solid #38bdf8; }
+    .quick-status-btn.sl { background:#c2410c; color:#fff; border:1px solid #fb923c; }
+    .quick-status-btn.clr { background:#0f172a; color:#cbd5e1; border:1px solid var(--border); }
+
+    .code-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(76px,1fr)); gap:7px; margin:10px 0; max-height:220px; overflow-y:auto; padding-right:2px; }
+    .code-btn {
+      background:#162238;
+      border:1.5px solid #4b5d7a;
+      color:#f8fafc;
+      padding:9px 6px;
+      border-radius:8px;
+      font-weight:800;
+      font-size:12.5px;
+      letter-spacing:0.1px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      white-space:nowrap;
+      min-width:0;
+    }
+    .code-btn span:first-child { white-space:nowrap; }
+    .code-btn.selected { background:#2563eb; border-color:#93c5fd; color:#fff; }
+    .btn { background:var(--primary); color:#fff; border:none; padding:9px 12px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px; }
+    .btn-warn { background:#ca8a04; color:#0f172a; border:none; padding:9px 12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; }
+    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+
+    .quad-toggle-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:8px; }
+    .quad-tile {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      background:var(--bg);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px 11px;
+      cursor:pointer;
+      min-height:52px;
+    }
+    .quad-tile.wrd-tile { border-color:rgba(245,158,11,0.65); }
+    .quad-tile.ph-tile { border-color:rgba(129,140,248,0.65); }
+    .quad-tile.jb-tile { border-color:rgba(20,184,166,0.55); }
+    .quad-tile.dd-tile { border-color:rgba(168,85,247,0.55); }
+    .quad-tile-text { font-size:12px; font-weight:700; line-height:1.3; }
+    .quad-tile input[type="checkbox"] { width:18px; height:18px; flex-shrink:0; cursor:pointer; }
+
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; background:var(--bg); padding:10px 12px; border-radius:8px; margin-top:8px; cursor:pointer; }
+    .msg-tip { font-size:12px; color:var(--accent); margin-top:6px; min-height:16px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1 id="appHeaderTitle">Duty &amp; Salary</h1>
+  <div class="controls">
+    <select id="yearSelect"></select>
+    <select id="monthSelect"></select>
+    <button type="button" class="lang-btn" id="langToggleBtn" onclick="toggleLang()">华语</button>
+  </div>
+</header>
+<div class="container">
+  <div id="tab-schedule" class="tab-content active">
+    <div class="drawer-card">
+      <button type="button" class="drawer-trigger" onclick="toggleRouteDrawer()">
+        <span><span id="drawerTitleText">Routes &amp; Search Drawer</span> <span class="drawer-sub" id="selectedRoutesBadge">(Route 12, Route 15, Route 68...)</span></span>
+        <span id="drawerArrow">▼</span>
+      </button>
+      <div class="drawer-body" id="routeDrawerBody">
+        <input type="text" class="drawer-search" id="schedRouteSearch" placeholder="Search route or duty number..." oninput="renderRouteDrawerList()" />
+        <div class="drawer-actions">
+          <button type="button" class="mini-btn" id="btnSelectAll" onclick="selectAllRoutes(true)">Select All</button>
+          <button type="button" class="mini-btn" id="btnClearAll" onclick="selectAllRoutes(false)">Clear All</button>
+        </div>
+        <div class="route-check-list" id="routeCheckList"></div>
+        <div class="drawer-shift-row">
+          <div class="shift-filter-bar" id="drawerShiftFilterBar"></div>
+          <div class="drawer-duty-preview" id="drawerDutyPreview"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cal-toolbar">
+      <div class="nav-pills">
+        <button type="button" class="pill-btn" onclick="stepMonth(-1)">&lt;</button>
+        <button type="button" class="pill-btn" onclick="stepMonth(1)">&gt;</button>
+        <button type="button" class="pill-btn" id="btnToday" onclick="goToday()">today</button>
+      </div>
+      <button type="button" class="dc-inline-trigger" id="dcInlineTrigger" onclick="toggleDutyCardDrawer()">
+        <span id="dcDrawerTitleText">Duty Card Lookup</span>
+        <span class="drawer-sub" id="dcDrawerBadge">(Route 12)</span>
+        <span id="dcDrawerArrow">▼</span>
+      </button>
+    </div>
+
+    <div class="dc-inline-panel" id="dutyCardDrawerBody">
+      <div class="dc-top-controls">
+        <input type="text" id="dcSearchInput" placeholder="Search route or duty code (e.g. 1051, 1111, 3051, 4051)..." oninput="renderDutyCards()" />
+        <div class="route-bar" id="routeTabsBar"></div>
+        <div class="shift-filter-bar" id="dcShiftFilterBar"></div>
+      </div>
+      <div class="duty-pill-list" id="dutyCardPills"></div>
+      <div class="merged-dc-card" id="dutyCardDetail"></div>
+      <div class="msg-tip" id="dcAssignMsg"></div>
+    </div>
+
+    <div class="month-banner" id="monthBannerTitle">November 2026</div>
+
+    <div id="calendarContainer"></div>
+
+    <div class="summary-grid">
+      <div class="stat-card"><div class="stat-label" id="lblDutyOt">Duty OT (1.5x)</div><div class="stat-val blue" id="sumDutyOt">0.00 h</div></div>
+      <div class="stat-card"><div class="stat-label" id="lblExtraOt">Extra OT (1.5x)</div><div class="stat-val purple" id="sumExtraOt">0.00 h</div></div>
+      <div class="stat-card"><div class="stat-label" id="lblOt2x">OT 2.0x</div><div class="stat-val amber" id="sumOt2x">0.00 h</div></div>
+      <div class="stat-card"><div class="stat-label" id="lblTotalOt">Total OT</div><div class="stat-val" id="sumTotalOt">0.00 h</div></div>
+    </div>
+
+    <div class="card">
+      <h2><span id="lblExtraOtCard">Extra OT (Hours)</span><span style="font-size:12px; color:var(--muted)" id="extraMinsTotal">1.5x: 0.00 h · 2.0x: 0.00 h</span></h2>
+      <div class="extra-form-grid">
+        <div class="extra-input-row">
+          <select id="extraDaySelect" title="Select day of month"></select>
+          <input type="text" inputmode="decimal" id="extraMinInput" placeholder="e.g. 1.30 or 40" onkeydown="if(event.key==='Enter') addExtraMin(1.5)" />
+        </div>
+        <div class="extra-btn-row">
+          <button type="button" class="btn" onclick="addExtraMin(1.5)">+ 1.5x</button>
+          <button type="button" class="btn-warn" onclick="addExtraMin(2.0)">+ 2.0x</button>
+        </div>
+      </div>
+      <div class="extra-hint" id="lblExtraHint">Day 1–15 → Period 1 · Day 16–31 → Period 2 · Format: 1.30 = 1.50 h</div>
+
+      <div class="extra-group">
+        <div class="extra-group-title"><span id="lblExtra15Group">Extra OT × 1.5</span><span id="extra15Summary">0.00 h</span></div>
+        <div id="extraChips15"></div>
+      </div>
+
+      <div class="extra-group">
+        <div class="extra-group-title" style="color:#fde047;"><span id="lblExtra20Group">Extra OT × 2.0</span><span id="extra20Summary">0.00 h</span></div>
+        <div id="extraChips20"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span id="lblBackupCard">Data Backup</span><span style="font-size:11px; color:var(--muted)" id="lblAutoSave">Local Auto-Save</span></h2>
+      <div style="font-size:12px; color:var(--muted);" id="lblBackupDesc">Export text to save in Notes/Chat, or paste back to restore.</div>
+      <div class="backup-actions">
+        <button type="button" class="btn btn-outline" id="btnExportData" onclick="exportBackup()">Export Data</button>
+        <button type="button" class="btn" id="btnRestoreData" onclick="importBackup()">Restore Data</button>
+      </div>
+      <textarea id="backupBox" class="backup-box" placeholder="Backup JSON appears here when exported, or paste saved JSON here to restore..."></textarea>
+      <div class="msg-tip" id="backupMsg"></div>
+    </div>
+
+    <div class="drawer-card" style="margin-bottom:14px;">
+      <button type="button" class="drawer-trigger" onclick="toggleGuideDrawer()">
+        <span><span id="guideTitleText">User Guide &amp; Rules</span> <span class="drawer-sub" id="guideSubBadge">(Tap to expand)</span></span>
+        <span id="guideArrow">▼</span>
+      </button>
+      <div class="drawer-body" id="guideDrawerBody">
+        <div class="guide-list" id="guideContentList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-salary" class="tab-content">
+    <div class="card">
+      <h2>
+        <span id="lblSalaryTitle">Salary</span>
+        <span style="font-size:11px; color:var(--muted)" id="salaryRateMeta">Day: $0.00 · Hr (7h20m): $0.00</span>
+      </h2>
+
+      <div class="sal-basic-bar">
+        <label>
+          <span class="sal-basic-title" id="lblBasicSalary">Basic Salary ($)</span>
+          <span class="sal-basic-hint" id="lblBasicHint">Day = Basic ÷ 26 (0.10) · Hr = Day ÷ 7h 20m</span>
+        </label>
+        <input type="number" step="0.01" min="0" class="sal-basic-input" id="basicSalaryInput" oninput="onBasicSalaryChange(this.value)" />
+      </div>
+
+      <div id="salaryBaseRows"></div>
+
+      <div class="sal-section-badge p1">
+        <span id="lblPeriod1Badge">Days 1 – 15</span>
+        <span id="period1Subtotal">$0.00</span>
+      </div>
+      <div id="salaryPeriod1Rows"></div>
+
+      <div class="sal-section-badge p2">
+        <span id="lblPeriod2Badge">Days 16 – 30/31</span>
+        <span id="period2Subtotal">$0.00</span>
+      </div>
+      <div id="salaryPeriod2Rows"></div>
+
+      <div class="split-pay-cards">
+        <div class="split-pay-box">
+          <div class="split-pay-label" id="lblPay1Card">1st Payout (Days 1–15 + Base/Bonus)</div>
+          <div class="split-pay-val" style="color:#60a5fa;" id="cardPay1">$0.00</div>
+          <div class="split-pay-sub" id="cardPay1Sub">Basic + Bonus + PH: 0d · JB: 0d · DD: 0d · OT: 0.00h</div>
+        </div>
+        <div class="split-pay-box">
+          <div class="split-pay-label" id="lblPay2Card">2nd Payout (Days 16–30/31)</div>
+          <div class="split-pay-val" style="color:#c084fc;" id="cardPay2">$0.00</div>
+          <div class="split-pay-sub" id="cardPay2Sub">PH: 0d · JB: 0d · DD: 0d · OT: 0.00h</div>
+        </div>
+      </div>
+
+      <div class="allow-ot-banner">
+        <div>
+          <div style="font-size:11.5px; font-weight:700; letter-spacing:0.4px; color:#93c5fd;" id="lblAllowOtBanner">FULL MONTH ALLOWANCES + OT TOTAL</div>
+          <div style="font-size:11px; color:#cbd5e1; margin-top:2px;" id="allowOtSummarySub">PH: 0d · JB: 0d · DD: 0d · 1.5x: 0.00h · 2.0x: 0.00h</div>
+        </div>
+        <div style="font-size:21px; font-weight:800; color:#f8fafc;" id="allowancesOtTotal">$0.00</div>
+      </div>
+
+      <div class="total-banner">
+        <div>
+          <div style="font-size:12px; font-weight:700; letter-spacing:0.4px; opacity:0.9;" id="lblGrossBanner">ESTIMATE GROSS SALARY</div>
+          <div style="font-size:11px; opacity:0.78; margin-top:2px;" id="grossSummarySub">Basic: $0 · PH: 0d · JB: 0d · DD: 0d · OT: 0.00h</div>
+        </div>
+        <div style="font-size:26px; font-weight:800;" id="estimateGrossSalary">$0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-greenroad" class="tab-content">
+    <div class="summary-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="stat-card"><div class="stat-label" id="lblGrAvg">Year Average (From Oct)</div><div class="stat-val" id="grAvg">0.0</div></div>
+      <div class="stat-card"><div class="stat-label" id="lblGrCount">Recorded Weeks</div><div class="stat-val blue" id="grCount">0</div></div>
+    </div>
+    <div class="card">
+      <h2>
+        <span id="lblGrTitle">Weekly GreenRoad (Sun – Sat)</span>
+        <select id="grRangeFilter" onchange="renderGreenRoad()"></select>
+      </h2>
+      <div class="gr-week-list" id="grWeeksContainer"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="dutyModal" onclick="if(event.target===this) closeModal()">
+  <div class="modal">
+    <h3><span id="modalDateTitle">Select Duty</span><span style="cursor:pointer; color:var(--muted)" onclick="closeModal()">✕</span></h3>
+    <div class="rule-hint" id="modalRuleHint"></div>
+    <div class="quick-status-row">
+      <button type="button" class="quick-status-btn rd" onclick="quickSetCode('RD')">RD</button>
+      <button type="button" class="quick-status-btn ho" onclick="quickSetCode('HO')">HO</button>
+      <button type="button" class="quick-status-btn sl" onclick="quickSetCode('SL')">SL</button>
+      <button type="button" class="quick-status-btn clr" id="btnQuickClear" onclick="quickSetCode('')">Clear</button>
+    </div>
+    <div class="shift-filter-bar" id="modalShiftFilterBar" style="margin-bottom:6px;"></div>
+    <div class="code-grid" id="modalCodeGrid"></div>
+
+    <div class="quad-toggle-grid">
+      <label class="quad-tile wrd-tile">
+        <span class="quad-tile-text" style="color:#fbbf24;" id="lblModalWrd">WRD (Salary OT 2.0x)</span>
+        <input type="checkbox" id="modalWrdToggle" />
+      </label>
+      <label class="quad-tile ph-tile">
+        <span class="quad-tile-text" style="color:#a5b4fc;" id="lblModalPh">PH (+1 Day · OT 2.0x)</span>
+        <input type="checkbox" id="modalPhToggle" onchange="refreshModalDayCodeState()" />
+      </label>
+      <label class="quad-tile jb-tile">
+        <span class="quad-tile-text" style="color:#5eead4;" id="lblModalJb">Jump Bus (+$3.00)</span>
+        <input type="checkbox" id="modalJbToggle" />
+      </label>
+      <label class="quad-tile dd-tile">
+        <span class="quad-tile-text" style="color:#d8b4fe;" id="lblModalDd">Double-Decker (+$7.00)</span>
+        <input type="checkbox" id="modalDdToggle" />
+      </label>
+    </div>
+
+    <div class="toggle-row" style="cursor:default; gap:8px;">
+      <div style="flex:1;">
+        <div style="font-size:13px; font-weight:700; color:#6ee7b7;" id="lblModalCustomTitle">Custom Net Work Hours (&gt; 7.20 = OT)</div>
+        <div style="font-size:11px; color:var(--muted);" id="lblModalCustomSub">e.g. 8.30 (8h30m) → OT = +1.17h</div>
+      </div>
+      <input type="text" inputmode="decimal" id="modalCustomWorkInp" placeholder="e.g. 8.30" style="width:92px; text-align:right; font-weight:700;" />
+    </div>
+
+    <button type="button" class="btn" id="btnModalSave" style="width:100%; margin-top:12px; padding:11px;" onclick="applySelection(true)">Confirm &amp; Save</button>
+  </div>
+</div>
+
+<nav>
+  <button type="button" id="nav-schedule" class="active" onclick="switchTab('schedule', this)">Schedule</button>
+  <button type="button" id="nav-salary" onclick="switchTab('salary', this)">Salary</button>
+  <button type="button" id="nav-greenroad" onclick="switchTab('greenroad', this)">GreenRoad</button>
+</nav>
+
+<script>
+const AVAILABLE_ROUTES = [
+  "Route 12",
+  "Route 15",
+  "Route 68",
+  "Route 358",
+  "Route 359",
+  "Route 354/403",
+  "PRFeeder"
+];
+
+const JUMP_BUS_ROUTES = new Set(["Route 354/403", "PRFeeder"]);
+const DOUBLE_DECKER_ROUTES = new Set(["Route 68"]);
+const DOUBLE_DECKER_DUTY_CODES = new Set([
+  "1202", "1204", "1205", "1208", "1210", "1214", "1217", "1219", "1220", "1223", "1227", "1232",
+  "1251", "1256", "1261", "1263", "1267", "1270",
+  "2202", "2204", "2205", "2208", "2210", "2214", "2217", "2219", "2220", "2223", "2227", "2232",
+  "2251", "2256", "2261", "2263", "2267", "2270",
+  "3201", "3203", "3204", "3205", "3207", "3208", "3210", "3211", "3212", "3213", "3215", "3216",
+  "3217", "3218", "3219", "3220", "3221", "3223", "3224", "3225", "3226", "3251", "3252", "3254",
+  "3255", "3257", "3258", "3259", "3261", "3262", "3263", "3264", "3266", "3267", "3268",
+  "4201", "4202", "4203", "4204", "4206", "4207", "4209", "4210", "4212", "4213", "4215", "4216",
+  "4218", "4219", "4221", "4222", "4224", "4225", "4226", "4251", "4252", "4253", "4254", "4255",
+  "4256", "4257", "4258", "4260", "4261", "4263", "4264", "4265", "4266", "4267"
+]);
+
+function hmStrToMins(str) {
+  const clean = String(str).trim().replace(":", ".");
+  const [hPart, mPart = "0"] = clean.split(".");
+  return parseInt(hPart, 10) * 60 + parseInt(mPart.padEnd(2, "0").slice(0, 2), 10);
+}
+
+function buildSegsFromPairs(pairs) {
+  return pairs.map(([a, b]) => [hmStrToMins(a), hmStrToMins(b)]);
+}
+
+function clonePoolWithPrefix(pool, targetPrefix) {
+  return Object.fromEntries(
+    Object.entries(pool).map(([num, obj]) => [
+      `${targetPrefix}${String(num).slice(1)}`,
+      { ...obj, segs: obj.segs.map(([s, e]) => [s, e]) }
+    ])
+  );
+}
+
+const S68_1XXX = {
+  "1084": { depot: "Loyang Depot", note: "Service 68 Tampines Int 1st Bus", segs: [[312, 888]] },
+  "1085": { depot: "Loyang Depot", note: "Service 68 Pasir Ris Int 1st Bus", segs: [[319, 843]] },
+  "1086": { depot: "Loyang Depot", note: "", segs: [[327, 833]] },
+  "1087": { depot: "Loyang Depot", note: "", segs: [[329, 863]] },
+  "1088": { depot: "Loyang Depot", note: "", segs: [[339, 936]] },
+  "1089": { depot: "Loyang Depot", note: "", segs: [[348, 868]] },
+  "1090": { depot: "Loyang Depot", note: "", segs: [[358, 981]] },
+  "1091": { depot: "Loyang Depot", note: "", segs: [[374, 803], [987, 1237]] },
+  "1092": { depot: "Loyang Depot", note: "", segs: [[387, 748], [991, 1246]] },
+  "1093": { depot: "Loyang Depot", note: "", segs: [[388, 649], [911, 1256]] },
+  "1094": { depot: "Pasir Ris Int", note: "", segs: [[804, 1378]] },
+  "1095": { depot: "Pasir Ris Int", note: "", segs: [[834, 1435]] },
+  "1096": { depot: "Pasir Ris Int", note: "", segs: [[844, 1447]] },
+  "1097": { depot: "Pasir Ris Int", note: "", segs: [[866, 1459]] },
+  "1098": { depot: "Loyang Depot", note: "", segs: [[871, 1471]] },
+  "1099": { depot: "Pasir Ris Int", note: "Service 68 Pasir Ris Int Last Bus", segs: [[887, 1497]] },
+  "1100": { depot: "Pasir Ris Int", note: "", segs: [[897, 1484]] }
+};
+
+const S68_2XXX = clonePoolWithPrefix(S68_1XXX, "2");
+
+const S68_3XXX = {
+  "3084": { depot: "Loyang Depot", note: "Service 68 Tampines Int 1st Bus", segs: [[312, 927]] },
+  "3085": { depot: "Loyang Depot", note: "Service 68 Pasir Ris Int 1st Bus", segs: [[319, 889]] },
+  "3086": { depot: "Loyang Depot", note: "", segs: [[327, 939]] },
+  "3087": { depot: "Loyang Depot", note: "", segs: [[331, 877]] },
+  "3088": { depot: "Loyang Depot", note: "", segs: [[343, 841]] },
+  "3089": { depot: "Loyang Depot", note: "", segs: [[367, 745], [1045, 1190]] },
+  "3090": { depot: "Pasir Ris Int", note: "", segs: [[433, 829], [1105, 1248]] },
+  "3091": { depot: "Pasir Ris Int", note: "", segs: [[829, 1462]] },
+  "3092": { depot: "Pasir Ris Int", note: "", segs: [[841, 1475]] },
+  "3093": { depot: "Pasir Ris Int", note: "", segs: [[877, 1438]] },
+  "3094": { depot: "Pasir Ris Int", note: "", segs: [[889, 1450]] },
+  "3095": { depot: "Pasir Ris Int", note: "", segs: [[925, 1488]] },
+  "3096": { depot: "Pasir Ris Int", note: "Service 68 Pasir Ris Int Last Bus", segs: [[937, 1500]] }
+};
+
+const S68_4XXX = {
+  "4084": { depot: "Loyang Depot", note: "Service 68 Tampines Int 1st Bus", segs: [[312, 829]] },
+  "4085": { depot: "Loyang Depot", note: "Service 68 Pasir Ris Int 1st Bus", segs: [[319, 817]] },
+  "4086": { depot: "Loyang Depot", note: "", segs: [[327, 776]] },
+  "4087": { depot: "Loyang Depot", note: "", segs: [[331, 877]] },
+  "4088": { depot: "Loyang Depot", note: "", segs: [[343, 927]] },
+  "4089": { depot: "Loyang Depot", note: "", segs: [[367, 662], [877, 1204]] },
+  "4090": { depot: "Pasir Ris Int", note: "", segs: [[493, 865], [1061, 1204]] },
+  "4091": { depot: "Loyang Depot", note: "", segs: [[593, 1253]] },
+  "4092": { depot: "Pasir Ris Int", note: "", segs: [[817, 1438]] },
+  "4093": { depot: "Pasir Ris Int", note: "", segs: [[829, 1450]] },
+  "4094": { depot: "Pasir Ris Int", note: "", segs: [[865, 1488]] },
+  "4095": { depot: "Loyang Depot", note: "", segs: [[915, 1475]] },
+  "4096": { depot: "Pasir Ris Int", note: "Service 68 Pasir Ris Int Last Bus", segs: [[931, 1500]] },
+  "4097": { depot: "Loyang Depot", note: "", segs: [[965, 1462]] }
+};
+
+const S12_1XXX = {
+  "1201": { depot: "Loyang Depot", note: "Service 12 Kampong Bahru Ter 1st Bus", segs: [[305, 781]] },
+  "1202": { depot: "Loyang Depot", note: "Service 12 Kallang Stn 1st Bus", segs: [[307, 628]] },
+  "1203": { depot: "Loyang Depot", note: "", segs: [[315, 721]] },
+  "1204": { depot: "Loyang Depot", note: "", segs: [[316, 963]] },
+  "1205": { depot: "Loyang Depot", note: "Service 12 Pasir Ris Int 1st Bus", segs: [[319, 865]] },
+  "1206": { depot: "Loyang Depot", note: "", segs: [[325, 699]] },
+  "1207": { depot: "Loyang Depot", note: "", segs: [[325, 757]] },
+  "1208": { depot: "Loyang Depot", note: "", segs: [[328, 766]] },
+  "1209": { depot: "Loyang Depot", note: "", segs: [[334, 915]] },
+  "1210": { depot: "Loyang Depot", note: "", segs: [[335, 951]] },
+  "1211": { depot: "Loyang Depot", note: "", segs: [[337, 918]] },
+  "1212": { depot: "Loyang Depot", note: "", segs: [[345, 811]] },
+  "1213": { depot: "Loyang Depot", note: "", segs: [[346, 768]] },
+  "1214": { depot: "Loyang Depot", note: "", segs: [[348, 890]] },
+  "1215": { depot: "Loyang Depot", note: "", segs: [[354, 825]] },
+  "1216": { depot: "Loyang Depot", note: "", segs: [[355, 796]] },
+  "1217": { depot: "Loyang Depot", note: "", segs: [[363, 927]] },
+  "1218": { depot: "Loyang Depot", note: "", segs: [[364, 903]] },
+  "1219": { depot: "Loyang Depot", note: "", segs: [[366, 839]] },
+  "1220": { depot: "Loyang Depot", note: "", segs: [[373, 1091]] },
+  "1221": { depot: "Loyang Depot", note: "", segs: [[377, 852]] },
+  "1222": { depot: "Loyang Depot", note: "", segs: [[378, 1012]] },
+  "1223": { depot: "Loyang Depot", note: "", segs: [[388, 1025]] },
+  "1224": { depot: "Loyang Depot", note: "", segs: [[383, 738], [981, 1221]] },
+  "1225": { depot: "Loyang Depot", note: "", segs: [[393, 648], [901, 1166]] },
+  "1226": { depot: "Loyang Depot", note: "", segs: [[403, 975]] },
+  "1227": { depot: "Loyang Depot", note: "", segs: [[408, 636], [891, 1161]] },
+  "1228": { depot: "Loyang Depot", note: "", segs: [[414, 681], [905, 1177]] },
+  "1229": { depot: "Loyang Depot", note: "", segs: [[438, 1130]] },
+  "1230": { depot: "Loyang Depot", note: "", segs: [[824, 1398]] },
+  "1231": { depot: "Loyang Depot", note: "", segs: [[910, 1523]] },
+  "1232": { depot: "Loyang Depot", note: "", segs: [[915, 1449]] },
+  "1233": { depot: "Loyang Depot", note: "Service 12 Pasir Ris Int Last Bus", segs: [[935, 1549]] },
+  "1234": { depot: "Loyang Depot", note: "", segs: [[1032, 1490]] },
+  "1251": { depot: "Pasir Ris Int", note: "", segs: [[432, 689], [935, 1247]] },
+  "1252": { depot: "Pasir Ris Int", note: "", segs: [[454, 712]] },
+  "1253": { depot: "Pasir Ris Int", note: "", segs: [[487, 736], [1001, 1260]] },
+  "1254": { depot: "Pasir Ris Int", note: "", segs: [[729, 1302]] },
+  "1255": { depot: "Pasir Ris Int", note: "", segs: [[742, 1327]] },
+  "1256": { depot: "Pasir Ris Int", note: "", segs: [[781, 1343]] },
+  "1257": { depot: "Pasir Ris Int", note: "", segs: [[794, 1497]] },
+  "1258": { depot: "Pasir Ris Int", note: "", segs: [[807, 1360]] },
+  "1259": { depot: "Pasir Ris Int", note: "", segs: [[819, 1384]] },
+  "1260": { depot: "Pasir Ris Int", note: "", segs: [[851, 1384]] },
+  "1261": { depot: "Pasir Ris Int", note: "", segs: [[861, 1425]] },
+  "1262": { depot: "Pasir Ris Int", note: "", segs: [[871, 1411]] },
+  "1263": { depot: "Pasir Ris Int", note: "", segs: [[881, 1436]] },
+  "1264": { depot: "Pasir Ris Int", note: "", segs: [[931, 1476]] },
+  "1265": { depot: "Pasir Ris Int", note: "", segs: [[951, 1463]] },
+  "1266": { depot: "Pasir Ris Int", note: "", segs: [[971, 1421]] },
+  "1267": { depot: "Pasir Ris Int", note: "", segs: [[991, 1503]] },
+  "1268": { depot: "Pasir Ris Int", note: "", segs: [[1011, 1530]] },
+  "1269": { depot: "Pasir Ris Int", note: "Service 12 Kampong Bahru Ter Last Bus", segs: [[1021, 1544]] },
+  "1270": { depot: "Pasir Ris Int", note: "", segs: [[1041, 1509]] },
+  "1271": { depot: "Pasir Ris Int", note: "", segs: [[1051, 1484]] },
+  "1272": { depot: "Pasir Ris Int", note: "", segs: [[1092, 1535]] },
+  "1273": { depot: "Pasir Ris Int", note: "", segs: [[1115, 1517]] }
+};
+
+const S12_2XXX = clonePoolWithPrefix(S12_1XXX, "2");
+
+const S12_3XXX = {
+  "3210": { depot: "Loyang Depot", note: "", segs: [[370, 810]] },
+  "3211": { depot: "Loyang Depot", note: "", segs: [[371, 903]] },
+  "3212": { depot: "Loyang Depot", note: "", segs: [[385, 892]] },
+  "3213": { depot: "Loyang Depot", note: "", segs: [[385, 900]] },
+  "3214": { depot: "Loyang Depot", note: "", segs: [[399, 1067]] },
+  "3215": { depot: "Loyang Depot", note: "", segs: [[413, 917]] },
+  "3216": { depot: "Loyang Depot", note: "", segs: [[427, 1022]] },
+  "3217": { depot: "Loyang Depot", note: "", segs: [[442, 1121]] },
+  "3218": { depot: "Loyang Depot", note: "", segs: [[457, 1006]] },
+  "3219": { depot: "Loyang Depot", note: "P", segs: [[472, 725], [986, 1255]] },
+  "3220": { depot: "Loyang Depot", note: "", segs: [[511, 1134]] },
+  "3221": { depot: "Loyang Depot", note: "", segs: [[529, 1213]] },
+  "3222": { depot: "Loyang Depot", note: "P · 96 (Parking)", segs: [[567, 826], [1015, 1258]] },
+  "3223": { depot: "Loyang Depot", note: "", segs: [[739, 1407]] },
+  "3224": { depot: "Loyang Depot", note: "", segs: [[760, 1474]] },
+  "3225": { depot: "Loyang Depot", note: "", segs: [[799, 1329]] },
+  "3226": { depot: "Loyang Depot", note: "", segs: [[820, 1507]] },
+  "3227": { depot: "Loyang Depot", note: "", segs: [[866, 1434]] },
+  "3251": { depot: "Pasir Ris Int", note: "", segs: [[728, 1388]] },
+  "3252": { depot: "Pasir Ris Int", note: "", segs: [[758, 1317]] },
+  "3253": { depot: "Pasir Ris Int", note: "", segs: [[788, 1502]] },
+  "3254": { depot: "Pasir Ris Int", note: "", segs: [[802, 1359]] },
+  "3255": { depot: "Pasir Ris Int", note: "", segs: [[816, 1488]] },
+  "3256": { depot: "Pasir Ris Int", note: "", segs: [[830, 1445]] },
+  "3257": { depot: "Pasir Ris Int", note: "", segs: [[844, 1395]] },
+  "3258": { depot: "Pasir Ris Int", note: "", segs: [[858, 1408]] },
+  "3259": { depot: "Pasir Ris Int", note: "", segs: [[865, 1446]] },
+  "3260": { depot: "Pasir Ris Int", note: "", segs: [[900, 1527]] },
+  "3261": { depot: "Pasir Ris Int", note: "", segs: [[914, 1422]] },
+  "3262": { depot: "Pasir Ris Int", note: "Service 12 Pasir Ris Int Last bus", segs: [[925, 1550]] },
+  "3263": { depot: "Pasir Ris Int", note: "", segs: [[928, 1459]] },
+  "3264": { depot: "Pasir Ris Int", note: "", segs: [[942, 1515]] },
+  "3265": { depot: "Pasir Ris Int", note: "", segs: [[971, 1488]] },
+  "3266": { depot: "Pasir Ris Int", note: "", segs: [[1045, 1523]] },
+  "3267": { depot: "Pasir Ris Int", note: "Service 12 Kampong Bahru Ter Last Bus", segs: [[1045, 1539]] },
+  "3268": { depot: "Pasir Ris Int", note: "", segs: [[1106, 1539]] }
+};
+
+const S12_4XXX = {
+  "4201": { depot: "Loyang Depot", note: "Service 12 Pasir Ris Int 1st Bus", segs: [[319, 824]] },
+  "4202": { depot: "Loyang Depot", note: "", segs: [[332, 841]] },
+  "4203": { depot: "Loyang Depot", note: "Service 12 Kampong Bahru Ter 1st Bus", segs: [[335, 921]] },
+  "4204": { depot: "Loyang Depot", note: "", segs: [[345, 791]] },
+  "4206": { depot: "Loyang Depot", note: "Service 12 Kallang Stn 1st Bus", segs: [[352, 959]] },
+  "4207": { depot: "Loyang Depot", note: "", segs: [[358, 778]] },
+  "4208": { depot: "Loyang Depot", note: "", segs: [[361, 1034]] },
+  "4209": { depot: "Loyang Depot", note: "", segs: [[363, 807]] },
+  "4210": { depot: "Loyang Depot", note: "", segs: [[371, 875]] },
+  "4211": { depot: "Loyang Depot", note: "", segs: [[377, 885]] },
+  "4212": { depot: "Loyang Depot", note: "", segs: [[384, 906]] },
+  "4213": { depot: "Loyang Depot", note: "", segs: [[397, 891]] },
+  "4214": { depot: "Loyang Depot", note: "", segs: [[410, 937]] },
+  "4215": { depot: "Loyang Depot", note: "", segs: [[423, 969]] },
+  "4216": { depot: "Loyang Depot", note: "", segs: [[438, 1146]] },
+  "4217": { depot: "Loyang Depot", note: "", segs: [[453, 953]] },
+  "4218": { depot: "Loyang Depot", note: "P · 215 (Parking)", segs: [[469, 865], [1081, 1251]] },
+  "4219": { depot: "Loyang Depot", note: "P · 219 (Parking)", segs: [[500, 740], [966, 1235]] },
+  "4220": { depot: "Loyang Depot", note: "", segs: [[589, 1208]] },
+  "4221": { depot: "Loyang Depot", note: "", segs: [[723, 1436]] },
+  "4222": { depot: "Loyang Depot", note: "", segs: [[769, 1486]] },
+  "4223": { depot: "Loyang Depot", note: "", segs: [[808, 1498]] },
+  "4224": { depot: "Loyang Depot", note: "", segs: [[823, 1423]] },
+  "4225": { depot: "Loyang Depot", note: "", segs: [[859, 1362]] },
+  "4226": { depot: "Loyang Depot", note: "", segs: [[868, 1515]] },
+  "4251": { depot: "Pasir Ris Int", note: "P", segs: [[535, 764], [1009, 1247]] },
+  "4252": { depot: "Pasir Ris Int", note: "", segs: [[763, 1338]] },
+  "4253": { depot: "Pasir Ris Int", note: "", segs: [[797, 1350]] },
+  "4254": { depot: "Pasir Ris Int", note: "", segs: [[805, 1510]] },
+  "4255": { depot: "Pasir Ris Int", note: "", segs: [[835, 1419]] },
+  "4256": { depot: "Pasir Ris Int", note: "", segs: [[844, 1376]] },
+  "4257": { depot: "Pasir Ris Int", note: "", segs: [[859, 1445]] },
+  "4258": { depot: "Pasir Ris Int", note: "", segs: [[889, 1530]] },
+  "4259": { depot: "Pasir Ris Int", note: "", segs: [[895, 1404]] },
+  "4260": { depot: "Pasir Ris Int", note: "Service 12 Pasir Ris Int Last Bus", segs: [[903, 1432]] },
+  "4261": { depot: "Pasir Ris Int", note: "", segs: [[918, 1545]] },
+  "4262": { depot: "Pasir Ris Int", note: "", segs: [[934, 1500]] },
+  "4263": { depot: "Pasir Ris Int", note: "", segs: [[955, 1458]] },
+  "4264": { depot: "Pasir Ris Int", note: "", segs: [[985, 1470]] },
+  "4265": { depot: "Pasir Ris Int", note: "", segs: [[998, 1484]] },
+  "4266": { depot: "Pasir Ris Int", note: "Service 12 Kampong Bahru Ter Last Bus", segs: [[1030, 1541]] },
+  "4267": { depot: "Pasir Ris Int", note: "", segs: [[1075, 1526]] }
+};
+
+const S15_1XXX = {
+  "1051": { depot: "Loyang Depot", note: "Service 15 Opp Eunos Stn 1st Bus", segs: buildSegsFromPairs([["05.14", "14.35"]]) },
+  "1052": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.21", "14.47"]]) },
+  "1053": { depot: "Loyang Depot", note: "Service 15 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.28", "15.14"]]) },
+  "1054": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.34", "16.09"]]) },
+  "1055": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.35", "15.25"]]) },
+  "1056": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.42", "16.00"]]) },
+  "1057": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.43", "13.47"]]) },
+  "1058": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.49", "15.36"]]) },
+  "1059": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.51", "16.26"]]) },
+  "1060": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.56", "15.01"]]) },
+  "1061": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.00", "13.22"], ["16.32", "20.10"]]) },
+  "1062": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.08", "11.14"], ["14.22", "19.25"]]) },
+  "1063": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.11", "09.53"], ["14.20", "20.30"]]) },
+  "1064": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.15", "11.14"], ["14.37", "19.38"]]) },
+  "1065": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.22", "11.23"], ["14.45", "19.46"]]) },
+  "1066": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.29", "11.38"], ["15.24", "19.54"]]) },
+  "1067": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.36", "14.12"], ["17.58", "20.35"]]) },
+  "1068": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.44", "11.45"], ["15.20", "20.26"]]) },
+  "1069": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["06.52", "11.52"], ["15.40", "20.06"]]) },
+  "1070": { depot: "Loyang Depot", note: "P · 25 (Parking)", segs: buildSegsFromPairs([["07.27", "12.28"], ["15.50", "20.51"]]) },
+  "1071": { depot: "Loyang Depot", note: "P", segs: buildSegsFromPairs([["07.45", "12.49"], ["15.57", "20.58"]]) },
+  "1072": { depot: "Pasir Ris Int", note: "P · 21 (Parking)", segs: buildSegsFromPairs([["08.10", "13.09"], ["16.11", "19.42"]]) },
+  "1073": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["12.02", "23.40"]]) },
+  "1074": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.25", "23.52"]]) },
+  "1075": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.55", "24.06"]]) },
+  "1076": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.12", "24.30"]]) },
+  "1077": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.54", "24.52"]]) },
+  "1078": { depot: "Pasir Ris Int", note: "Service 15 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["15.02", "25.05"]]) },
+  "1079": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.19", "23.15"]]) },
+  "1080": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.35", "24.19"]]) },
+  "1081": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.43", "23.27"]]) },
+  "1082": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["16.04", "24.41"]]) }
+};
+
+const S15_2XXX = Object.fromEntries(
+  Object.entries(S15_1XXX).map(([num, obj]) => [
+    String(Number(num) + 1000),
+    { ...obj }
+  ])
+);
+
+const S15_3XXX = {
+  "3051": { depot: "Loyang Depot", note: "Service 15 Opp Eunos Stn 1st Bus", segs: buildSegsFromPairs([["05.14", "14.18"]]) },
+  "3052": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.24", "14.05"]]) },
+  "3053": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.34", "15.12"]]) },
+  "3054": { depot: "Loyang Depot", note: "Service 15 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.34", "15.39"]]) },
+  "3055": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.44", "15.26"]]) },
+  "3056": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.52", "15.53"]]) },
+  "3057": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["06.10", "13.39"]]) },
+  "3058": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["06.28", "13.52"]]) },
+  "3059": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["07.17", "17.37"]]) },
+  "3060": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["07.32", "18.32"]]) },
+  "3061": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["09.33", "20.30"]]) },
+  "3062": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.43", "23.47"]]) },
+  "3063": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.57", "23.59"]]) },
+  "3064": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.11", "24.11"]]) },
+  "3065": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.25", "24.24"]]) },
+  "3066": { depot: "Pasir Ris Int", note: "Service 15 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["14.39", "25.00"]]) },
+  "3067": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.49", "24.36"]]) },
+  "3068": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["14.53", "22.39"]]) },
+  "3069": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["15.13", "24.47"]]) },
+  "3070": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.40", "23.18"]]) },
+  "3071": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.51", "23.32"]]) }
+};
+
+const S15_4XXX = {
+  "4051": { depot: "Loyang Depot", note: "Service 15 Opp Eunos Stn 1st Bus", segs: buildSegsFromPairs([["05.14", "13.44"]]) },
+  "4052": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.24", "13.58"]]) },
+  "4053": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.36", "14.27"]]) },
+  "4054": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.48", "14.40"]]) },
+  "4055": { depot: "Loyang Depot", note: "Service 15 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.49", "15.09"]]) },
+  "4056": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["06.03", "15.39"]]) },
+  "4057": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["06.17", "15.54"]]) },
+  "4058": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["06.31", "14.13"]]) },
+  "4059": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["07.48", "17.35"]]) },
+  "4060": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["08.58", "19.04"]]) },
+  "4061": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.05", "23.07"]]) },
+  "4062": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.48", "23.35"]]) },
+  "4063": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.14", "23.57"]]) },
+  "4064": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.27", "24.09"]]) },
+  "4065": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.40", "24.21"]]) },
+  "4066": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["14.46", "24.32"]]) },
+  "4067": { depot: "Pasir Ris Int", note: "Service 15 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["15.06", "24.58"]]) },
+  "4068": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.34", "24.44"]]) },
+  "4069": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.48", "23.20"]]) },
+  "4070": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["16.25", "23.45"]]) }
+};
+
+const S358_1XXX = {
+  "1111": { depot: "Loyang Depot", note: "Service 358 Blk 626 1st Bus", segs: buildSegsFromPairs([["04.44", "15.30"]]) },
+  "1112": { depot: "Loyang Depot", note: "Service 358 East Loop & West Loop 1st Bus", segs: buildSegsFromPairs([["04.49", "15.22"]]) },
+  "1113": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["04.56", "14.12"]]) },
+  "1114": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.08", "15.14"]]) },
+  "1115": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.33", "14.04"]]) },
+  "1116": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.47", "15.08"]]) },
+  "1117": { depot: "Loyang Depot", note: "P · 119 (Parking)", segs: buildSegsFromPairs([["06.06", "09.50"], ["14.42", "20.07"]]) },
+  "1118": { depot: "Loyang Depot", note: "P · 118 (Parking)", segs: buildSegsFromPairs([["06.17", "12.40"], ["16.49", "20.35"]]) },
+  "1119": { depot: "Loyang Depot", note: "P · 116 (Parking)", segs: buildSegsFromPairs([["06.40", "09.43"], ["13.54", "20.18"]]) },
+  "1120": { depot: "Loyang Depot", note: "P · 114 (Parking)", segs: buildSegsFromPairs([["06.45", "12.10"], ["16.08", "20.44"]]) },
+  "1121": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["12.51", "23.51"]]) },
+  "1122": { depot: "Loyang Depot", note: "Service 358 West Loop Last Bus", segs: buildSegsFromPairs([["16.29", "25.26"]]) },
+  "1123": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["17.03", "25.18"]]) },
+  "1131": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.04", "24.58"]]) },
+  "1132": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.12", "24.35"]]) },
+  "1133": { depot: "Pasir Ris Int", note: "Service 358 East Loop Last Bus", segs: buildSegsFromPairs([["15.20", "25.32"]]) }
+};
+
+const S358_2XXX = {
+  "2111": { depot: "Loyang Depot", note: "Service 358 Blk 626 1st Bus", segs: buildSegsFromPairs([["04.44", "15.30"]]) },
+  "2112": { depot: "Loyang Depot", note: "Service 358 East Loop & West Loop 1st Bus", segs: buildSegsFromPairs([["04.49", "15.22"]]) },
+  "2113": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["04.56", "14.12"]]) },
+  "2114": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.08", "15.14"]]) },
+  "2115": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.33", "14.04"]]) },
+  "2116": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.47", "15.08"]]) },
+  "2117": { depot: "Loyang Depot", note: "P · 119 (Parking)", segs: buildSegsFromPairs([["06.06", "09.50"], ["14.42", "20.07"]]) },
+  "2118": { depot: "Loyang Depot", note: "P · 118 (Parking)", segs: buildSegsFromPairs([["06.17", "12.40"], ["16.49", "20.35"]]) },
+  "2119": { depot: "Loyang Depot", note: "P · 116 (Parking)", segs: buildSegsFromPairs([["06.40", "09.43"], ["13.54", "20.18"]]) },
+  "2120": { depot: "Loyang Depot", note: "P · 114 (Parking)", segs: buildSegsFromPairs([["06.45", "12.10"], ["16.08", "20.44"]]) },
+  "2121": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["12.51", "23.51"]]) },
+  "2122": { depot: "Loyang Depot", note: "Service 358 West Loop Last Bus", segs: buildSegsFromPairs([["16.29", "25.26"]]) },
+  "2123": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["17.03", "25.18"]]) },
+  "2131": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.04", "24.58"]]) },
+  "2132": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.12", "24.35"]]) },
+  "2133": { depot: "Pasir Ris Int", note: "Service 358 East Loop Last Bus", segs: buildSegsFromPairs([["15.20", "25.32"]]) }
+};
+
+const S359_1XXX = {
+  "1141": { depot: "Loyang Depot", note: "Service 359 West Loop 1st Bus", segs: buildSegsFromPairs([["05.19", "13.48"]]) },
+  "1142": { depot: "Loyang Depot", note: "Service 359 East Loop 1st Bus", segs: buildSegsFromPairs([["05.19", "14.56"]]) },
+  "1143": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.28", "13.24"]]) },
+  "1144": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.28", "15.15"]]) },
+  "1145": { depot: "Loyang Depot", note: "Service 359 Opp White Sands Pr Sch 1st Bus", segs: buildSegsFromPairs([["05.33", "15.43"]]) },
+  "1146": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.37", "15.20"]]) },
+  "1147": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.46", "15.41"]]) },
+  "1148": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.54", "15.27"]]) },
+  "1149": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.56", "16.03"]]) },
+  "1150": { depot: "Loyang Depot", note: "P · 147 (Parking)", segs: buildSegsFromPairs([["06.06", "09.07"], ["14.22", "20.07"]]) },
+  "1151": { depot: "Loyang Depot", note: "P · 109 (Parking)", segs: buildSegsFromPairs([["06.11", "09.11"], ["14.29", "20.30"]]) },
+  "1152": { depot: "Loyang Depot", note: "P · 106 (Parking)", segs: buildSegsFromPairs([["06.16", "09.16"], ["14.50", "20.39"]]) },
+  "1153": { depot: "Loyang Depot", note: "P · 181 (Parking)", segs: buildSegsFromPairs([["06.31", "12.12"], ["17.58", "20.48"]]) },
+  "1154": { depot: "Loyang Depot", note: "P · 95 (Parking)", segs: buildSegsFromPairs([["06.56", "08.38"], ["14.57", "20.52"]]) },
+  "1155": { depot: "Loyang Depot", note: "P · 201 (Parking)", segs: buildSegsFromPairs([["07.06", "10.07"], ["15.18", "20.55"]]) },
+  "1156": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["17.08", "24.50"]]) },
+  "1157": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["17.17", "25.28"]]) },
+  "1158": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["17.25", "25.38"]]) },
+  "1159": { depot: "Loyang Depot", note: "Service 359 West Loop Last Bus", segs: buildSegsFromPairs([["17.32", "25.30"]]) },
+  "1161": { depot: "Pasir Ris Int", note: "P", segs: buildSegsFromPairs([["07.08", "09.54"], ["15.10", "20.57"]]) },
+  "1162": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.38", "21.33"]]) },
+  "1163": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.47", "24.28"]]) },
+  "1164": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.17", "25.00"]]) },
+  "1165": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.33", "25.18"]]) },
+  "1166": { depot: "Pasir Ris Int", note: "Service 359 East Loop Last Bus", segs: buildSegsFromPairs([["18.37", "25.48"]]) }
+};
+
+const S359_2XXX = {
+  "2141": { depot: "Loyang Depot", note: "Service 359 West Loop 1st Bus", segs: buildSegsFromPairs([["05.19", "13.48"]]) },
+  "2142": { depot: "Loyang Depot", note: "Service 359 East Loop 1st Bus", segs: buildSegsFromPairs([["05.19", "14.56"]]) },
+  "2143": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.28", "13.24"]]) },
+  "2144": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.28", "15.15"]]) },
+  "2145": { depot: "Loyang Depot", note: "Service 359 Opp White Sands Pr Sch 1st Bus", segs: buildSegsFromPairs([["05.33", "15.43"]]) },
+  "2146": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.37", "15.20"]]) },
+  "2147": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.46", "15.41"]]) },
+  "2148": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.54", "15.27"]]) },
+  "2149": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["05.56", "16.03"]]) },
+  "2150": { depot: "Loyang Depot", note: "P · 147 (Parking)", segs: buildSegsFromPairs([["06.06", "09.07"], ["14.22", "20.07"]]) },
+  "2151": { depot: "Loyang Depot", note: "P · 109 (Parking)", segs: buildSegsFromPairs([["06.11", "09.11"], ["14.29", "20.30"]]) },
+  "2152": { depot: "Loyang Depot", note: "P · 106 (Parking)", segs: buildSegsFromPairs([["06.16", "09.16"], ["14.50", "20.39"]]) },
+  "2153": { depot: "Loyang Depot", note: "P · 181 (Parking)", segs: buildSegsFromPairs([["06.31", "12.12"], ["17.58", "20.48"]]) },
+  "2154": { depot: "Loyang Depot", note: "P · 95 (Parking)", segs: buildSegsFromPairs([["06.56", "08.38"], ["14.57", "20.52"]]) },
+  "2155": { depot: "Loyang Depot", note: "P · 201 (Parking)", segs: buildSegsFromPairs([["07.06", "10.07"], ["15.18", "20.55"]]) },
+  "2156": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["17.08", "24.50"]]) },
+  "2157": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["17.17", "25.28"]]) },
+  "2158": { depot: "Loyang Depot", note: "", segs: buildSegsFromPairs([["17.25", "25.38"]]) },
+  "2159": { depot: "Loyang Depot", note: "Service 359 West Loop Last Bus", segs: buildSegsFromPairs([["17.32", "25.27"]]) },
+  "2161": { depot: "Pasir Ris Int", note: "P", segs: buildSegsFromPairs([["07.08", "09.54"], ["15.10", "20.57"]]) },
+  "2162": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["13.38", "21.33"]]) },
+  "2163": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["14.47", "24.28"]]) },
+  "2164": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.17", "25.00"]]) },
+  "2165": { depot: "Pasir Ris Int", note: "", segs: buildSegsFromPairs([["15.33", "25.18"]]) },
+  "2166": { depot: "Pasir Ris Int", note: "Service 359 East Loop Last Bus", segs: buildSegsFromPairs([["18.37", "25.45"]]) }
+};
+
+const S354_403_1XXX = {
+  "1171": { depot: "Loyang Depot", note: "354/403 · Service 354 Opp Loyang Townhse 1st Bus", segs: buildSegsFromPairs([["05.19", "14.48"]]) },
+  "1172": { depot: "Loyang Depot", note: "354/403 · Service 354 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.32", "15.03"]]) },
+  "1173": { depot: "Loyang Depot", note: "354/403 · Service 403 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.48", "14.27"]]) },
+  "1174": { depot: "Loyang Depot", note: "354/403", segs: buildSegsFromPairs([["06.03", "16.19"]]) },
+  "1175": { depot: "Loyang Depot", note: "354/403 · P · 160 (Parking)", segs: buildSegsFromPairs([["06.18", "12.27"], ["16.09", "17.51"]]) },
+  "1176": { depot: "Loyang Depot", note: "354/403 · P · 175 (Parking)", segs: buildSegsFromPairs([["06.22", "12.48"], ["15.58", "20.35"]]) },
+  "1181": { depot: "Pasir Ris Int", note: "354/403 · P", segs: buildSegsFromPairs([["07.25", "12.43"], ["16.14", "20.49"]]) },
+  "1182": { depot: "Pasir Ris Int", note: "354/403", segs: buildSegsFromPairs([["12.17", "22.48"]]) },
+  "1183": { depot: "Pasir Ris Int", note: "354/403", segs: buildSegsFromPairs([["12.38", "23.00"]]) },
+  "1184": { depot: "Pasir Ris Int", note: "354/403 · Service 354 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["14.06", "25.25"]]) },
+  "1185": { depot: "Pasir Ris Int", note: "354/403 · Service 403 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["14.33", "24.51"]]) },
+  "1186": { depot: "Pasir Ris Int", note: "354/403", segs: buildSegsFromPairs([["14.54", "25.10"]]) }
+};
+
+const S354_403_2XXX = {
+  "2171": { depot: "Loyang Depot", note: "354/403 · Service 354 Opp Loyang Townhse 1st Bus", segs: buildSegsFromPairs([["05.19", "14.48"]]) },
+  "2172": { depot: "Loyang Depot", note: "354/403 · Service 354 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.32", "15.03"]]) },
+  "2173": { depot: "Loyang Depot", note: "354/403 · Service 403 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.48", "14.27"]]) },
+  "2174": { depot: "Loyang Depot", note: "354/403", segs: buildSegsFromPairs([["06.03", "16.19"]]) },
+  "2175": { depot: "Loyang Depot", note: "354/403 · P · 160 (Parking)", segs: buildSegsFromPairs([["06.18", "12.27"], ["16.09", "17.51"]]) },
+  "2176": { depot: "Loyang Depot", note: "354/403 · P · 175 (Parking)", segs: buildSegsFromPairs([["06.22", "12.48"], ["15.58", "20.35"]]) },
+  "2181": { depot: "Pasir Ris Int", note: "354/403 · P", segs: buildSegsFromPairs([["07.25", "12.43"], ["16.14", "20.49"]]) },
+  "2182": { depot: "Pasir Ris Int", note: "354/403", segs: buildSegsFromPairs([["12.17", "22.48"]]) },
+  "2183": { depot: "Pasir Ris Int", note: "354/403", segs: buildSegsFromPairs([["12.38", "23.00"]]) },
+  "2184": { depot: "Pasir Ris Int", note: "354/403 · Service 354 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["14.06", "25.25"]]) },
+  "2185": { depot: "Pasir Ris Int", note: "354/403 · Service 403 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["14.33", "24.51"]]) },
+  "2186": { depot: "Pasir Ris Int", note: "354/403", segs: buildSegsFromPairs([["14.54", "25.10"]]) }
+};
+
+const SPRF_3XXX = {
+  "3111": { depot: "Loyang Depot", note: "PRFeeder Sat · Service 358 East Loop 1st Bus", segs: buildSegsFromPairs([["05.11", "16.10"]]) },
+  "3112": { depot: "Loyang Depot", note: "PRFeeder Sat", segs: buildSegsFromPairs([["05.19", "13.50"]]) },
+  "3113": { depot: "Loyang Depot", note: "PRFeeder Sat · Service 359 West Loop 1st Bus", segs: buildSegsFromPairs([["05.19", "14.47"]]) },
+  "3114": { depot: "Loyang Depot", note: "PRFeeder Sat · Service 358 West Loop 1st Bus", segs: buildSegsFromPairs([["05.19", "16.20"]]) },
+  "3115": { depot: "Loyang Depot", note: "PRFeeder Sat · Service 359 East Loop 1st Bus", segs: buildSegsFromPairs([["05.19", "16.29"]]) },
+  "3116": { depot: "Loyang Depot", note: "PRFeeder Sat", segs: buildSegsFromPairs([["05.27", "13.45"]]) },
+  "3117": { depot: "Loyang Depot", note: "PRFeeder Sat", segs: buildSegsFromPairs([["05.28", "15.31"]]) },
+  "3118": { depot: "Loyang Depot", note: "PRFeeder Sat", segs: buildSegsFromPairs([["05.30", "13.05"]]) },
+  "3119": { depot: "Loyang Depot", note: "PRFeeder Sat · Service 359 Opp White Sands Pr Sch 1st Bus", segs: buildSegsFromPairs([["05.31", "14.01"]]) },
+  "3120": { depot: "Loyang Depot", note: "PRFeeder Sat", segs: buildSegsFromPairs([["05.37", "16.02"]]) },
+  "3121": { depot: "Loyang Depot", note: "PRFeeder Sat · Service 403 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.49", "13.43"]]) },
+  "3122": { depot: "Loyang Depot", note: "PRFeeder Sat · Service 354 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.49", "16.10"]]) },
+  "3123": { depot: "Loyang Depot", note: "PRFeeder Sat", segs: buildSegsFromPairs([["06.02", "16.32"]]) },
+  "3124": { depot: "Loyang Depot", note: "PRFeeder Sat", segs: buildSegsFromPairs([["06.04", "15.09"]]) },
+  "3125": { depot: "Loyang Depot", note: "PRFeeder Sat · P · 301 (Parking)", segs: buildSegsFromPairs([["06.04", "08.23"], ["12.40", "19.25"]]) },
+  "3126": { depot: "Loyang Depot", note: "PRFeeder Sat", segs: buildSegsFromPairs([["06.19", "14.09"]]) },
+  "3127": { depot: "Loyang Depot", note: "PRFeeder Sat", segs: buildSegsFromPairs([["06.31", "16.37"]]) },
+  "3128": { depot: "Loyang Depot", note: "PRFeeder Sat", segs: buildSegsFromPairs([["07.00", "17.30"]]) },
+  "3129": { depot: "Loyang Depot", note: "PRFeeder Sat", segs: buildSegsFromPairs([["12.59", "23.45"]]) },
+  "3151": { depot: "Pasir Ris Int", note: "PRFeeder Sat · P", segs: buildSegsFromPairs([["06.19", "10.35"], ["13.35", "18.42"]]) },
+  "3152": { depot: "Pasir Ris Int", note: "PRFeeder Sat · P", segs: buildSegsFromPairs([["07.05", "12.28"], ["16.19", "20.55"]]) },
+  "3153": { depot: "Pasir Ris Int", note: "PRFeeder Sat · P", segs: buildSegsFromPairs([["07.25", "12.44"], ["18.09", "20.44"]]) },
+  "3154": { depot: "Pasir Ris Int", note: "PRFeeder Sat · P", segs: buildSegsFromPairs([["07.30", "12.41"], ["18.55", "20.25"]]) },
+  "3155": { depot: "Pasir Ris Int", note: "PRFeeder Sat", segs: buildSegsFromPairs([["09.25", "20.12"]]) },
+  "3156": { depot: "Pasir Ris Int", note: "PRFeeder Sat", segs: buildSegsFromPairs([["13.00", "23.57"]]) },
+  "3157": { depot: "Pasir Ris Int", note: "PRFeeder Sat", segs: buildSegsFromPairs([["13.15", "24.04"]]) },
+  "3158": { depot: "Pasir Ris Int", note: "PRFeeder Sat", segs: buildSegsFromPairs([["13.51", "25.21"]]) },
+  "3159": { depot: "Pasir Ris Int", note: "PRFeeder Sat · Service 354 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["14.03", "25.26"]]) },
+  "3160": { depot: "Pasir Ris Int", note: "PRFeeder Sat", segs: buildSegsFromPairs([["14.55", "24.06"]]) },
+  "3161": { depot: "Pasir Ris Int", note: "PRFeeder Sat", segs: buildSegsFromPairs([["14.59", "24.57"]]) },
+  "3162": { depot: "Pasir Ris Int", note: "PRFeeder Sat · Service 359 West Loop Last Bus", segs: buildSegsFromPairs([["15.04", "25.33"]]) },
+  "3163": { depot: "Pasir Ris Int", note: "PRFeeder Sat", segs: buildSegsFromPairs([["15.43", "25.21"]]) },
+  "3164": { depot: "Pasir Ris Int", note: "PRFeeder Sat", segs: buildSegsFromPairs([["16.05", "25.33"]]) },
+  "3165": { depot: "Pasir Ris Int", note: "PRFeeder Sat · Service 359 East Loop Last Bus", segs: buildSegsFromPairs([["16.10", "25.47"]]) },
+  "3166": { depot: "Pasir Ris Int", note: "PRFeeder Sat", segs: buildSegsFromPairs([["16.19", "24.35"]]) },
+  "3167": { depot: "Pasir Ris Int", note: "PRFeeder Sat", segs: buildSegsFromPairs([["16.27", "25.10"]]) },
+  "3168": { depot: "Pasir Ris Int", note: "PRFeeder Sat · Service 358 West Loop Last Bus", segs: buildSegsFromPairs([["17.20", "25.24"]]) },
+  "3169": { depot: "Pasir Ris Int", note: "PRFeeder Sat · Service 403 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["17.31", "24.47"]]) },
+  "3170": { depot: "Pasir Ris Int", note: "PRFeeder Sat · Service 358 East Loop Last Bus", segs: buildSegsFromPairs([["18.02", "25.33"]]) },
+  "3171": { depot: "Pasir Ris Int", note: "PRFeeder Sat", segs: buildSegsFromPairs([["18.25", "25.10"]]) }
+};
+
+const SPRF_4XXX = {
+  "4111": { depot: "Loyang Depot", note: "PRFeeder Sun · Service 358 East Loop 1st Bus", segs: buildSegsFromPairs([["05.19", "14.26"]]) },
+  "4112": { depot: "Loyang Depot", note: "PRFeeder Sun · Service 358 West Loop 1st Bus", segs: buildSegsFromPairs([["05.19", "15.34"]]) },
+  "4113": { depot: "Loyang Depot", note: "PRFeeder Sun", segs: buildSegsFromPairs([["05.26", "15.45"]]) },
+  "4114": { depot: "Loyang Depot", note: "PRFeeder Sun", segs: buildSegsFromPairs([["05.26", "16.04"]]) },
+  "4115": { depot: "Loyang Depot", note: "PRFeeder Sun", segs: buildSegsFromPairs([["05.34", "14.11"]]) },
+  "4116": { depot: "Loyang Depot", note: "PRFeeder Sun · Service 359 West Loop 1st Bus", segs: buildSegsFromPairs([["05.34", "15.05"]]) },
+  "4117": { depot: "Loyang Depot", note: "PRFeeder Sun · Service 359 East Loop 1st Bus", segs: buildSegsFromPairs([["05.34", "15.28"]]) },
+  "4118": { depot: "Loyang Depot", note: "PRFeeder Sun", segs: buildSegsFromPairs([["05.41", "13.27"]]) },
+  "4119": { depot: "Loyang Depot", note: "PRFeeder Sun", segs: buildSegsFromPairs([["05.44", "16.07"]]) },
+  "4120": { depot: "Loyang Depot", note: "PRFeeder Sun · Service 359 Opp White Sands Pr Sch 1st Bus", segs: buildSegsFromPairs([["05.46", "14.27"]]) },
+  "4121": { depot: "Loyang Depot", note: "PRFeeder Sun · Service 354 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.49", "13.46"]]) },
+  "4122": { depot: "Loyang Depot", note: "PRFeeder Sun · Service 403 Pasir Ris Int 1st Bus", segs: buildSegsFromPairs([["05.49", "15.17"]]) },
+  "4123": { depot: "Loyang Depot", note: "PRFeeder Sun", segs: buildSegsFromPairs([["05.52", "14.56"]]) },
+  "4124": { depot: "Loyang Depot", note: "PRFeeder Sun · P · 308 (Parking)", segs: buildSegsFromPairs([["06.04", "08.22"], ["11.25", "19.30"]]) },
+  "4125": { depot: "Loyang Depot", note: "PRFeeder Sun · P · 305 (Parking)", segs: buildSegsFromPairs([["06.05", "13.03"], ["16.05", "18.35"]]) },
+  "4126": { depot: "Loyang Depot", note: "PRFeeder Sun · P · 304 (Parking)", segs: buildSegsFromPairs([["06.06", "10.36"], ["13.54", "18.40"]]) },
+  "4127": { depot: "Loyang Depot", note: "PRFeeder Sun", segs: buildSegsFromPairs([["06.11", "17.05"]]) },
+  "4128": { depot: "Loyang Depot", note: "PRFeeder Sun", segs: buildSegsFromPairs([["07.33", "18.02"]]) },
+  "4151": { depot: "Pasir Ris Int", note: "PRFeeder Sun · P", segs: buildSegsFromPairs([["06.39", "14.43"], ["18.25", "19.54"]]) },
+  "4152": { depot: "Pasir Ris Int", note: "PRFeeder Sun · P", segs: buildSegsFromPairs([["06.57", "11.43"], ["14.59", "19.51"]]) },
+  "4153": { depot: "Pasir Ris Int", note: "PRFeeder Sun · P", segs: buildSegsFromPairs([["07.10", "12.22"], ["15.40", "18.00"]]) },
+  "4154": { depot: "Pasir Ris Int", note: "PRFeeder Sun · P", segs: buildSegsFromPairs([["07.44", "13.12"], ["16.27", "20.54"]]) },
+  "4155": { depot: "Pasir Ris Int", note: "PRFeeder Sun · P", segs: buildSegsFromPairs([["08.25", "14.08"], ["18.10", "20.29"]]) },
+  "4156": { depot: "Pasir Ris Int", note: "PRFeeder Sun", segs: buildSegsFromPairs([["12.27", "22.19"]]) },
+  "4157": { depot: "Pasir Ris Int", note: "PRFeeder Sun", segs: buildSegsFromPairs([["12.33", "22.50"]]) },
+  "4158": { depot: "Pasir Ris Int", note: "PRFeeder Sun", segs: buildSegsFromPairs([["12.40", "21.57"]]) },
+  "4159": { depot: "Pasir Ris Int", note: "PRFeeder Sun", segs: buildSegsFromPairs([["13.36", "25.11"]]) },
+  "4160": { depot: "Pasir Ris Int", note: "PRFeeder Sun", segs: buildSegsFromPairs([["14.16", "25.11"]]) },
+  "4161": { depot: "Pasir Ris Int", note: "PRFeeder Sun · Service 403 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["14.17", "24.46"]]) },
+  "4162": { depot: "Pasir Ris Int", note: "PRFeeder Sun · Service 359 West Loop Last Bus", segs: buildSegsFromPairs([["14.55", "25.33"]]) },
+  "4163": { depot: "Pasir Ris Int", note: "PRFeeder Sun", segs: buildSegsFromPairs([["14.55", "25.37"]]) },
+  "4164": { depot: "Pasir Ris Int", note: "PRFeeder Sun", segs: buildSegsFromPairs([["14.57", "24.01"]]) },
+  "4165": { depot: "Pasir Ris Int", note: "PRFeeder Sun", segs: buildSegsFromPairs([["15.07", "24.46"]]) },
+  "4166": { depot: "Pasir Ris Int", note: "PRFeeder Sun", segs: buildSegsFromPairs([["15.25", "25.07"]]) },
+  "4167": { depot: "Pasir Ris Int", note: "PRFeeder Sun", segs: buildSegsFromPairs([["15.51", "24.23"]]) },
+  "4168": { depot: "Pasir Ris Int", note: "PRFeeder Sun · Service 358 West Loop Last Bus", segs: buildSegsFromPairs([["15.57", "25.29"]]) },
+  "4169": { depot: "Pasir Ris Int", note: "PRFeeder Sun · Service 358 East Loop Last Bus", segs: buildSegsFromPairs([["16.04", "25.26"]]) },
+  "4170": { depot: "Pasir Ris Int", note: "PRFeeder Sun · Service 354 Pasir Ris Int Last Bus", segs: buildSegsFromPairs([["18.05", "25.27"]]) },
+  "4171": { depot: "Pasir Ris Int", note: "PRFeeder Sun", segs: buildSegsFromPairs([["18.17", "25.24"]]) },
+  "4172": { depot: "Pasir Ris Int", note: "PRFeeder Sun · Service 359 East Loop Last Bus", segs: buildSegsFromPairs([["19.10", "25.50"]]) }
+};
+
+const ROUTES_DB = {
+  "Route 12": { "1": S12_1XXX, "2": S12_2XXX, "3": S12_3XXX, "4": S12_4XXX, "8": {} },
+  "Route 15": { "1": S15_1XXX, "2": S15_2XXX, "3": S15_3XXX, "4": S15_4XXX, "8": {} },
+  "Route 68": { "1": S68_1XXX, "2": S68_2XXX, "3": S68_3XXX, "4": S68_4XXX, "8": {} },
+  "Route 358": { "1": S358_1XXX, "2": S358_2XXX, "3": {}, "4": {}, "8": {} },
+  "Route 359": { "1": S359_1XXX, "2": S359_2XXX, "3": {}, "4": {}, "8": {} },
+  "Route 354/403": { "1": S354_403_1XXX, "2": S354_403_2XXX, "3": {}, "4": {}, "8": {} },
+  "PRFeeder": { "1": {}, "2": {}, "3": SPRF_3XXX, "4": SPRF_4XXX, "8": {} }
+};
+
+const I18N = {
+  en: {
+    langBtn: "华语",
+    headerTitle: "Duty & Salary",
+    drawerTitle: "Routes & Search Drawer",
+    dcDrawerTitle: "Duty Card",
+    guideTitle: "User Guide & Rules",
+    guideSub: "(Tap to expand)",
+    searchPlaceholder: "Search route or duty code (e.g. 1202, 1051, 1084, 1111)...",
+    drawerSearchPlaceholder: "Search route or duty number...",
+    selectAll: "Select All",
+    clearAll: "Clear All",
+    none: "None",
+    today: "today",
+    dutyOt: "Duty OT (1.5x)",
+    extraOt: "Extra OT (1.5x)",
+    ot2x: "OT 2.0x",
+    totalOt: "Total OT",
+    extraOtCard: "Extra OT (Hours)",
+    extraInputPlaceholder: "e.g. 1.30 or 40",
+    extraHint: "Summed in minutes first, then ÷ 60 · Format: 1.30 = 1h 30m (1.50 h)",
+    extra15Group: "Extra OT × 1.5",
+    extra20Group: "Extra OT × 2.0",
+    extraP1Label: "Days 1–15 (Period 1)",
+    extraP2Label: "Days 16–31 (Period 2)",
+    extraEmpty: "No records",
+    daySuffix: d => `Day ${d}`,
+    chipDay: d => `D${d}`,
+    assignToDayBtn: "Assign to Day",
+    assignSavedMsg: (num, d) => `Assigned Duty ${num} to Day ${d}.`,
+    backupCard: "Data Backup",
+    autoSave: "Local Auto-Save",
+    backupDesc: "Export text to save in Notes/Chat, or paste back to restore.",
+    exportData: "Export Data",
+    restoreData: "Restore Data",
+    backupPlaceholder: "Backup JSON appears here when exported, or paste saved JSON here to restore...",
+    backupExported: "Backup JSON generated.",
+    backupRestored: "Data restored successfully.",
+    backupInvalid: "Invalid JSON format.",
+    salaryTitle: "Salary",
+    rateMeta: (day, hr) => `Day: $${day.toFixed(2)} · Hr (7h20m): $${hr.toFixed(2)}`,
+    basicSalary: "Basic Salary ($)",
+    basicHint: "Day = Basic ÷ 26 (0.10) · Hr = Day ÷ 7h 20m",
+    period1Badge: "Days 1 – 15",
+    period2Badge: "Days 16 – 30/31",
+    pay1Card: "1st Payout (Days 1–15 + Base/Bonus)",
+    pay2Card: "2nd Payout (Days 16–30/31)",
+    pay1Sub: (ph, jb, dd, ot) => `Basic + Bonus + PH: ${ph}d · JB: ${jb}d · DD: ${dd}d · OT: ${ot.toFixed(2)}h`,
+    pay2Sub: (ph, jb, dd, ot) => `PH: ${ph}d · Jump Bus: ${jb}d · Double-Decker: ${dd}d · OT: ${ot.toFixed(2)}h`,
+    allowOtBanner: "FULL MONTH ALLOWANCES + OT TOTAL",
+    allowOtSub: (ph, jb, dd, ot15, ot20) => `PH: ${ph}d · JB: ${jb}d · DD: ${dd}d · 1.5x: ${ot15.toFixed(2)}h · 2.0x: ${ot20.toFixed(2)}h`,
+    grossBanner: "ESTIMATE GROSS SALARY",
+    grossSub: (basic, ph, jb, dd, ot, qp) => `Basic: $${basic.toFixed(0)} · PH: ${ph}d · JB: ${jb}d · DD: ${dd}d · OT: ${ot.toFixed(2)}h · QP: $${qp.toFixed(0)}`,
+    safeTitle: "Safe Driving Bonus",
+    safeSub: "Tick for $100.00",
+    qpTitle: "Quarterly Productivity",
+    qpLine: (qLabel, duties) => `${qLabel} (excl. RD/SL/HO) · ${duties} duties`,
+    qpRuleLine: (payMonthLabel, isPayMonth) =>
+      `73+=$270 · 70–72=$180 · 66–69=$120 · Payout: ${payMonthLabel}${isPayMonth ? " (Paid)" : " (Progress only)"}`,
+    qosTitle: "Quality Of Service Bonus",
+    qosSub: "Custom amount (Max $100.00)",
+    phWrdP1Title: "Public Holiday (Days 1–15)",
+    phWrdP2Title: "Public Holiday (Days 16–30/31)",
+    phWrdSub: (ph, dr) => `PH (+1d): ${ph}d × $${dr.toFixed(2)}/d`,
+    jbP1Title: "Jump Bus Allowance (Days 1–15)",
+    jbP2Title: "Jump Bus Allowance (Days 16–30/31)",
+    jbSub: jb => `Auto from schedule · $3.00/d × ${jb}d`,
+    ddP1Title: "Double Decker Allowance (Days 1–15)",
+    ddP2Title: "Double Decker Allowance (Days 16–30/31)",
+    ddSub: dd => `Auto from schedule · $7.00/d × ${dd}d`,
+    autoTag: "AUTO",
+    progressTag: "PROGRESS",
+    extraTitle: "Extra",
+    extraSub: "Custom adjustment ($)",
+    ot15P1Title: "Overtime × 1.5 (Days 1–15)",
+    ot20P1Title: "Overtime × 2.0 (Days 1–15)",
+    ot15P2Title: "Overtime × 1.5 (Days 16–30/31)",
+    ot20P2Title: "Overtime × 2.0 (Days 16–30/31)",
+    otRowSub: (hrs, mins, rate) => `${hrs.toFixed(2)} h (${mins}m) · $${rate.toFixed(2)}/h`,
+    noDutyCards: "No matching duty cards",
+    noDuty: "No Duty",
+    signOn: "Sign-On",
+    signOff: "Sign-Off",
+    workTotal: "Work Total",
+    partLabel: idx => `Part ${idx + 1} (${idx === 0 ? "Morning / Early" : "Evening / Late"})`,
+    partWork: (h, m) => `Work ${h}h ${m}m`,
+    breakBanner: (s, e, h, m) => `Off-Duty Break / Split Gap: ${s} – ${e} (${h}h ${m}m)`,
+    grAvg: "Year Average (From Oct)",
+    grCount: "Recorded Weeks",
+    grTitle: "Weekly GreenRoad (Sun – Sat)",
+    grAllOpt: sy => `All Weeks (${sy} Oct – ${sy + 1} Sep)`,
+    modalDateTitle: dk => `Duty · ${dk}`,
+    dayCodeLabel: dCode => ({ "1": "Mon–Thu", "2": "Fri", "3": "Sat", "4": "Sun" })[dCode] || "",
+    quickClear: "Clear",
+    modalWrd: "WRD (Salary OT 2.0x)",
+    modalPh: "PH (+1 Day · OT 2.0x)",
+    modalJb: "Jump Bus (+$3.00)",
+    modalDd: "Double-Decker (+$7.00)",
+    modalCustomTitle: "Custom Net Work Hours (> 7.20 = OT)",
+    modalCustomSub: "e.g. 8.30 (8h30m) → OT = +1.17h",
+    modalCustomPlaceholder: "e.g. 8.30",
+    modalSave: "Confirm & Save",
+    navSchedule: "Schedule",
+    navSalary: "Salary",
+    navGreenRoad: "GreenRoad",
+    guideSections: [
+      {
+        title: "1. Scheduling, PH & WRD Rules",
+        items: [
+          "RD = 0d; regular duty or HO = 1d. Ticking PH adds +1d under Public Holiday and counts OT over 7h 20m at 2.0x (Indigo block).",
+          "Ticking WRD (Work Rest Day, Amber block) keeps calendar OT display unchanged, while counting full duty net work hours into Overtime × 2.0 on the Salary tab.",
+          "Top-left badges show JB or DD (or J·D when both are ticked) inside a fixed 7-column grid so rows never overflow."
+        ]
+      },
+      {
+        title: "2. Original OT Formula & Split Payouts",
+        items: [
+          "Daily rate is rounded to $0.10 (Basic ÷ 26) and hourly rate is Day ÷ 7h 20m. OT hours are summed in minutes, converted to hours (mins ÷ 60), then multiplied by hourlyRate and 1.5x/2.0x and rounded to the cent.",
+          "In Extra OT or Custom Net Work Hours, enter H.MM format (e.g. 1.30 = 1h 30m = 90m = 1.50h) or plain minutes (e.g. 40 = 40 mins).",
+          "1st Payout includes Basic Salary, Bonuses, Extra adjustment, plus Days 1–15 PH, Jump Bus, Double-Decker, 1.5x OT & 2.0x OT. 2nd Payout covers Days 16–30/31 PH, Jump Bus, Double-Decker, 1.5x OT & 2.0x OT."
+        ]
+      },
+      {
+        title: "3. Quarterly Productivity & HO",
+        items: [
+          "Quarterly Productivity counts duties over the 3-month quarter (excluding RD/SL/HO): 73+ = $270, 70–72 = $180, 66–69 = $120, <66 = $0.",
+          "Paid in Jan (Oct–Dec), Apr (Jan–Mar), Jul (Apr–Jun), Oct (Jul–Sep)."
+        ]
+      }
+    ]
+  },
+  zh: {
+    langBtn: "EN",
+    headerTitle: "Duty & Salary",
+    drawerTitle: "路线与班次抽屉",
+    dcDrawerTitle: "班次卡速查",
+    guideTitle: "使用说明与规则教学",
+    guideSub: "(点击展开)",
+    searchPlaceholder: "搜索路线或卡号（如 1202, 1051, 1084, 1111）...",
+    drawerSearchPlaceholder: "搜索路线或卡号...",
+    selectAll: "全选",
+    clearAll: "清空",
+    none: "无",
+    today: "今天",
+    dutyOt: "Duty OT (1.5x)",
+    extraOt: "Extra OT (1.5x)",
+    ot2x: "OT 2.0x",
+    totalOt: "总 OT",
+    extraOtCard: "额外 OT (小时)",
+    extraInputPlaceholder: "如 1.30 或 40",
+    extraHint: "先按分钟汇总再 ÷ 60 · 格式：1.30 = 1小时30分 (1.50h)",
+    extra15Group: "额外 OT × 1.5",
+    extra20Group: "额外 OT × 2.0",
+    extraP1Label: "1–15号（上半月）",
+    extraP2Label: "16–31号（下半月）",
+    extraEmpty: "暂无记录",
+    daySuffix: d => `${d}日`,
+    chipDay: d => `${d}日`,
+    assignToDayBtn: "填入排班",
+    assignSavedMsg: (num, d) => `已将班次 ${num} 填入 ${d} 日排班。`,
+    backupCard: "数据备份",
+    autoSave: "本地自动保存",
+    backupDesc: "导出文本保存到备忘录/聊天，或粘贴回来恢复。",
+    exportData: "导出数据",
+    restoreData: "恢复数据",
+    backupPlaceholder: "导出后会显示备份 JSON，也可把保存的 JSON 粘贴到这里恢复...",
+    backupExported: "已生成备份 JSON。",
+    backupRestored: "数据恢复成功。",
+    backupInvalid: "JSON 格式无效。",
+    salaryTitle: "薪资估算",
+    rateMeta: (day, hr) => `日薪: $${day.toFixed(2)} · 时薪 (7h20m): $${hr.toFixed(2)}`,
+    basicSalary: "底薪 Basic Salary ($)",
+    basicHint: "日薪 = 底薪 ÷ 26 (精确到0.10) · 时薪 = 日薪 ÷ 7小时20分",
+    period1Badge: "1 – 15 号",
+    period2Badge: "16 – 30/31 号",
+    pay1Card: "第一次出粮 (底薪+奖金 + 1–15号)",
+    pay2Card: "第二次出粮 (16–30/31号)",
+    pay1Sub: (ph, jb, dd, ot) => `底薪奖金 + PH: ${ph}天 · 跳车: ${jb}天 · 双层: ${dd}天 · OT: ${ot.toFixed(2)}h`,
+    pay2Sub: (ph, jb, dd, ot) => `PH: ${ph}天 · 跳车: ${jb}天 · 双层: ${dd}天 · OT: ${ot.toFixed(2)}h`,
+    allowOtBanner: "全月津贴 + 加班合计 ALLOWANCES + OT",
+    allowOtSub: (ph, jb, dd, ot15, ot20) => `PH: ${ph}天 · 跳车: ${jb}天 · 双层: ${dd}天 · 1.5x: ${ot15.toFixed(2)}h · 2.0x: ${ot20.toFixed(2)}h`,
+    grossBanner: "全月应发总薪资 ESTIMATE GROSS SALARY",
+    grossSub: (basic, ph, jb, dd, ot, qp) => `底薪: $${basic.toFixed(0)} · PH: ${ph}天 · 跳车: ${jb}天 · 双层: ${dd}天 · OT: ${ot.toFixed(2)}h · 季产: $${qp.toFixed(0)}`,
+    safeTitle: "安全驾驶奖 Safe Driving Bonus",
+    safeSub: "勾选得 $100.00",
+    qpTitle: "季度生产力津贴 Quarterly Productivity",
+    qpLine: (qLabel, duties) => `${qLabel}（不含RD/SL/HO）· 已排 ${duties} 班`,
+    qpRuleLine: (payMonthLabel, isPayMonth) =>
+      `73+=$270 · 70–72=$180 · 66–69=$120 · 发放月：${payMonthLabel}${isPayMonth ? "（本月发放）" : "（仅进度）"}`,
+    qosTitle: "服务质量奖 Quality Of Service Bonus",
+    qosSub: "自定义金额（最高 $100.00）",
+    phWrdP1Title: "公共假期 Public Holiday (1–15号)",
+    phWrdP2Title: "公共假期 Public Holiday (16–30/31号)",
+    phWrdSub: (ph, dr) => `PH (+1天)：${ph}天 × $${dr.toFixed(2)}/天`,
+    jbP1Title: "跳车津贴 Jump Bus (1–15号)",
+    jbP2Title: "跳车津贴 Jump Bus (16–30/31号)",
+    jbSub: jb => `按排班自动统计 · $3.00/天 × ${jb}天`,
+    ddP1Title: "双层巴士津贴 Double Decker (1–15号)",
+    ddP2Title: "双层巴士津贴 Double Decker (16–30/31号)",
+    ddSub: dd => `按排班自动统计 · $7.00/天 × ${dd}天`,
+    autoTag: "自动",
+    progressTag: "进度",
+    extraTitle: "额外调整 Extra",
+    extraSub: "自定义金额 ($)",
+    ot15P1Title: "加班费 × 1.5 (1–15号)",
+    ot20P1Title: "加班费 × 2.0 (1–15号)",
+    ot15P2Title: "加班费 × 1.5 (16–30/31号)",
+    ot20P2Title: "加班费 × 2.0 (16–30/31号)",
+    otRowSub: (hrs, mins, rate) => `${hrs.toFixed(2)} 小时 (${mins}m) · $${rate.toFixed(2)}/小时`,
+    noDutyCards: "没有匹配的班次卡",
+    noDuty: "无班次",
+    signOn: "Sign-On",
+    signOff: "Sign-Off",
+    workTotal: "Work Total",
+    partLabel: idx => `第 ${idx + 1} 段 (${idx === 0 ? "早段" : "晚段"})`,
+    partWork: (h, m) => `工时 ${h}小时 ${m}分`,
+    breakBanner: (s, e, h, m) => `分班休息间隔: ${s} – ${e} (${h}小时 ${m}分)`,
+    grAvg: "全年平均 (10月起)",
+    grCount: "已录周数",
+    grTitle: "每周 GreenRoad (周日 – 周六)",
+    grAllOpt: sy => `全部周次 (${sy}年10月 – ${sy + 1}年9月)`,
+    modalDateTitle: dk => `排班 · ${dk}`,
+    dayCodeLabel: dCode => ({ "1": "周一至周四", "2": "周五", "3": "周六", "4": "周日" })[dCode] || "",
+    quickClear: "清除",
+    modalWrd: "WRD (薪资 OT 2.0x)",
+    modalPh: "PH (+1 Day · OT 2.0x)",
+    modalJb: "跳车津贴 (+$3.00)",
+    modalDd: "双层巴士 (+$7.00)",
+    modalCustomTitle: "临时净工时 (超 7.20 算 OT)",
+    modalCustomSub: "如填 8.30 (8h30m) → OT = +1.17h",
+    modalCustomPlaceholder: "如 8.30",
+    modalSave: "确认并保存",
+    navSchedule: "排班表",
+    navSalary: "薪资",
+    navGreenRoad: "GreenRoad",
+    guideSections: [
+      {
+        title: "1. 排班、PH 与 WRD 规则",
+        items: [
+          "RD = 0天；普通班次或 HO = 1天。勾选 PH（靛蓝色）会在 Public Holiday 栏 +1天日薪，且当天超出 7小时20分 部分按 OT 2.0x 计算。",
+          "勾选 WRD（休息日加班，橙色）时，日历下方保持原加班显示，仅在薪资分页的 Overtime × 2.0 把当天整份净工时算进去。",
+          "日历 7 列已锁死等宽，左上角单选显示 JB 或 DD，同时勾选合并显示为单个 J·D 标签。"
+        ]
+      },
+      {
+        title: "2. 原有加班算法与分两次出粮规则",
+        items: [
+          "日薪 = 底薪 ÷ 26（精确到0.10），时薪 = 日薪 ÷ 7小时20分。加班先按分钟累计并换算成小时（分钟 ÷ 60），再乘时薪与倍率（1.5x/2.0x）并四舍五入到分。",
+          "额外 OT 与临时净工时支持「小时.分钟」格式（如 1.30 = 1小时30分 = 90分钟 = 1.50小时），也可直接填整数分钟（如 40）。",
+          "第一次出粮（1st Payout）= 固定底薪 + 各类奖金/额外调整 + 1–15号（PH、跳车、双层、1.5x OT、2.0x OT）；第二次出粮（2nd Payout）= 16–30/31号（PH、跳车、双层、1.5x OT、2.0x OT）。"
+        ]
+      },
+      {
+        title: "3. 季度生产力津贴与 HO 说明",
+        items: [
+          "Quarterly Productivity 按季度 3 个月班次数（不含 RD/SL/HO）：73+ = $270、70–72 = $180、66–69 = $120、<66 = $0。",
+          "仅在对应发放月计入当月全月应发总薪资：1月发（10–12月）、4月发（1–3月）、7月发（4–6月）、10月发（7–9月）。拿 HO 不会直接扣钱，只是未计入已跑班次数，若走长年假规则则每季最多折算 5 天。"
+        ]
+      }
+    ]
+  }
+};
+
+const STORAGE_KEY = "duty_salary_tracker_step1_v42";
+const OT_BASE_MINS = 7 * 60 + 20;
+const BASIC_DIVISOR_DAYS = 26;
+const DAILY_WORK_HOURS = OT_BASE_MINS / 60;
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const SHORT_MONTHS = ["01 - Jan","02 - Feb","03 - Mar","04 - Apr","05 - May","06 - Jun","07 - Jul","08 - Aug","09 - Sep","10 - Oct","11 - Nov","12 - Dec"];
+const SHIFT_OPTIONS = [
+  { key: "ALL", label: "All", cls: "" },
+  { key: "AM", label: "AM", cls: "am" },
+  { key: "PM", label: "PM", cls: "pm" },
+  { key: "SPLIT", label: "S", cls: "split" }
+];
+
+let state = loadState();
+let modalDateKey = null;
+let modalSelectedCode = "";
+let activeRouteTab = AVAILABLE_ROUTES[0];
+let activeShiftFilter = "ALL";
+let drawerShiftFilter = "ALL";
+let activeDutyPill = null;
+
+function t() {
+  return I18N[state.lang === "zh" ? "zh" : "en"];
+}
+
+function defaultState() {
+  return {
+    lang: "en",
+    year: 2026,
+    month: 10,
+    selectedRoutes: [...AVAILABLE_ROUTES],
+    schedule: {},
+    extraOt: {},
+    salaryConfig: {
+      basicSalary: 0,
+      safeDriving: false,
+      qosBonus: 0,
+      extraAmount: 0
+    },
+    greenroad: {}
+  };
+}
+
+function normalizeSelectedRoutes(routes) {
+  const allowed = new Set(Array.isArray(routes) ? routes : []);
+  return AVAILABLE_ROUTES.filter(r => allowed.has(r));
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("duty_salary_tracker_step1_v41") || localStorage.getItem("duty_salary_tracker_step1_v40");
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    const base = defaultState();
+    const oldSal = parsed.salaryConfig || {};
+    return {
+      ...base,
+      ...parsed,
+      lang: parsed.lang === "zh" ? "zh" : "en",
+      selectedRoutes: Array.isArray(parsed.selectedRoutes) ? normalizeSelectedRoutes(parsed.selectedRoutes) : base.selectedRoutes,
+      salaryConfig: {
+        basicSalary: Number(oldSal.basicSalary ?? oldSal.basicBase ?? base.salaryConfig.basicSalary) || 0,
+        safeDriving: oldSal.safeDriving !== undefined ? !!oldSal.safeDriving : base.salaryConfig.safeDriving,
+        qosBonus: Math.min(100, Math.max(0, Number(oldSal.qosBonus ?? base.salaryConfig.qosBonus) || 0)),
+        extraAmount: Number(oldSal.extraAmount ?? oldSal.extraAdj ?? base.salaryConfig.extraAmount) || 0
+      }
+    };
+  } catch {
+    return defaultState();
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function toggleLang() {
+  state.lang = state.lang === "zh" ? "en" : "zh";
+  saveState();
+  applyStaticTranslations();
+  populateExtraDaySelect();
+  renderAll();
+  if (modalDateKey) {
+    refreshModalDayCodeState();
+  }
+}
+
+function applyStaticTranslations() {
+  const tr = t();
+  document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
+  document.getElementById("langToggleBtn").textContent = tr.langBtn;
+  document.getElementById("appHeaderTitle").textContent = tr.headerTitle;
+  document.getElementById("drawerTitleText").textContent = tr.drawerTitle;
+  document.getElementById("dcDrawerTitleText").textContent = tr.dcDrawerTitle;
+  document.getElementById("guideTitleText").textContent = tr.guideTitle;
+  document.getElementById("guideSubBadge").textContent = tr.guideSub;
+  document.getElementById("schedRouteSearch").placeholder = tr.drawerSearchPlaceholder;
+  document.getElementById("btnSelectAll").textContent = tr.selectAll;
+  document.getElementById("btnClearAll").textContent = tr.clearAll;
+  document.getElementById("btnToday").textContent = tr.today;
+
+  document.getElementById("lblDutyOt").textContent = tr.dutyOt;
+  document.getElementById("lblExtraOt").textContent = tr.extraOt;
+  document.getElementById("lblOt2x").textContent = tr.ot2x;
+  document.getElementById("lblTotalOt").textContent = tr.totalOt;
+
+  document.getElementById("lblExtraOtCard").textContent = tr.extraOtCard;
+  document.getElementById("extraMinInput").placeholder = tr.extraInputPlaceholder;
+  document.getElementById("lblExtraHint").textContent = tr.extraHint;
+  document.getElementById("lblExtra15Group").textContent = tr.extra15Group;
+  document.getElementById("lblExtra20Group").textContent = tr.extra20Group;
+
+  document.getElementById("lblBackupCard").textContent = tr.backupCard;
+  document.getElementById("lblAutoSave").textContent = tr.autoSave;
+  document.getElementById("lblBackupDesc").textContent = tr.backupDesc;
+  document.getElementById("btnExportData").textContent = tr.exportData;
+  document.getElementById("btnRestoreData").textContent = tr.restoreData;
+  document.getElementById("backupBox").placeholder = tr.backupPlaceholder;
+
+  document.getElementById("lblSalaryTitle").textContent = tr.salaryTitle;
+  document.getElementById("lblBasicSalary").textContent = tr.basicSalary;
+  document.getElementById("lblBasicHint").textContent = tr.basicHint;
+  document.getElementById("lblPeriod1Badge").textContent = tr.period1Badge;
+  document.getElementById("lblPeriod2Badge").textContent = tr.period2Badge;
+  document.getElementById("lblPay1Card").textContent = tr.pay1Card;
+  document.getElementById("lblPay2Card").textContent = tr.pay2Card;
+  document.getElementById("lblAllowOtBanner").textContent = tr.allowOtBanner;
+  document.getElementById("lblGrossBanner").textContent = tr.grossBanner;
+
+  document.getElementById("dcSearchInput").placeholder = tr.searchPlaceholder;
+
+  document.getElementById("lblGrAvg").textContent = tr.grAvg;
+  document.getElementById("lblGrCount").textContent = tr.grCount;
+  document.getElementById("lblGrTitle").textContent = tr.grTitle;
+
+  document.getElementById("btnQuickClear").textContent = tr.quickClear;
+  document.getElementById("lblModalWrd").textContent = tr.modalWrd;
+  document.getElementById("lblModalPh").textContent = tr.modalPh;
+  document.getElementById("lblModalJb").textContent = tr.modalJb;
+  document.getElementById("lblModalDd").textContent = tr.modalDd;
+  document.getElementById("lblModalCustomTitle").textContent = tr.modalCustomTitle;
+  document.getElementById("lblModalCustomSub").textContent = tr.modalCustomSub;
+  document.getElementById("modalCustomWorkInp").placeholder = tr.modalCustomPlaceholder;
+  document.getElementById("btnModalSave").textContent = tr.modalSave;
+
+  document.getElementById("nav-schedule").textContent = tr.navSchedule;
+  document.getElementById("nav-salary").textContent = tr.navSalary;
+  document.getElementById("nav-greenroad").textContent = tr.navGreenRoad;
+
+  renderGuideContent();
+}
+
+function renderGuideContent() {
+  const tr = t();
+  const box = document.getElementById("guideContentList");
+  if (!box) return;
+  box.innerHTML = tr.guideSections.map(sec => `
+    <div class="guide-item">
+      <div class="guide-item-title">${sec.title}</div>
+      <ul>${sec.items.map(line => `<li>${line}</li>`).join("")}</ul>
+    </div>
+  `).join("");
+}
+
+function fmtHM(mins) {
+  const norm = ((mins % 1440) + 1440) % 1440;
+  const h = String(Math.floor(norm / 60)).padStart(2, "0");
+  const m = String(norm % 60).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+function minsToHours(mins) {
+  return (Math.round(mins || 0)) / 60;
+}
+
+function roundMoney(val) {
+  return Math.round((Number(val) + 1e-9) * 100) / 100;
+}
+
+function calcPayslipRates(basicSalary) {
+  const basic = Number(basicSalary) || 0;
+  const dailyRate = Math.round((basic / BASIC_DIVISOR_DAYS) * 10) / 10;
+  const hourlyRate = dailyRate / DAILY_WORK_HOURS;
+  const rate15 = hourlyRate * 1.5;
+  const rate20 = hourlyRate * 2.0;
+  return { dailyRate, hourlyRate, rate15, rate20 };
+}
+
+function totalSegMins(dutyObj) {
+  if (!dutyObj || !Array.isArray(dutyObj.segs)) return 0;
+  return dutyObj.segs.reduce((acc, [s, e]) => acc + Math.max(0, e - s), 0);
+}
+
+function calcDutyOtMins(dutyObj, customWorkMins) {
+  const mins = (customWorkMins !== undefined && customWorkMins !== null && customWorkMins > 0)
+    ? Math.round(customWorkMins)
+    : totalSegMins(dutyObj);
+  return Math.max(0, mins - OT_BASE_MINS);
+}
+
+function calcSalaryDutyOtMins(dutyObj, customWorkMins, isWrd) {
+  const mins = (customWorkMins !== undefined && customWorkMins !== null && customWorkMins > 0)
+    ? Math.round(customWorkMins)
+    : totalSegMins(dutyObj);
+  if (isWrd) return Math.max(0, mins);
+  return Math.max(0, mins - OT_BASE_MINS);
+}
+
+function classifyShift(dutyObj) {
+  if (!dutyObj || !Array.isArray(dutyObj.segs) || dutyObj.segs.length === 0) return "AM";
+  if (dutyObj.segs.length > 1) return "SPLIT";
+  const [start, end] = dutyObj.segs[0];
+  if (start >= 720) return "PM";
+  if (end >= 1080) return "T";
+  return "AM";
+}
+
+function matchesShiftFilter(st, filterKey) {
+  if (filterKey === "ALL") return true;
+  if (filterKey === "SPLIT") return st === "SPLIT" || st === "T";
+  return st === filterKey;
+}
+
+function shiftBadgeHtml(st) {
+  if (st === "AM") return `<span class="am-tag">AM</span>`;
+  if (st === "PM") return `<span class="pm-tag">PM</span>`;
+  if (st === "SPLIT") return `<span class="split-tag">S</span>`;
+  if (st === "T") return `<span class="t-tag">T</span>`;
+  return "";
+}
+
+function dayCodeForDate(y, m0, d) {
+  const dow = new Date(y, m0, d).getDay();
+  if (dow === 0) return "4";
+  if (dow === 5) return "2";
+  if (dow === 6) return "3";
+  return "1";
+}
+
+function effectiveDayCode(y, m0, d, isPh) {
+  if (isPh) return "4";
+  return dayCodeForDate(y, m0, d);
+}
+
+function getSearchableRoutes() {
+  return state.selectedRoutes.length ? state.selectedRoutes : AVAILABLE_ROUTES;
+}
+
+function lookupDuty(code, dutyNum) {
+  const prefix = String(dutyNum || "").charAt(0);
+  const targetCode = ["1", "2", "3", "4"].includes(prefix) ? prefix : code;
+  for (const rName of getSearchableRoutes()) {
+    const rPools = ROUTES_DB[rName] || {};
+    if (rPools[targetCode] && rPools[targetCode][dutyNum]) {
+      return { route: rName, duty: rPools[targetCode][dutyNum] };
+    }
+  }
+  return null;
+}
+
+function routeAutoFlags(routeName, dutyNum) {
+  const codeStr = String(dutyNum || "").trim();
+  return {
+    isJb: JUMP_BUS_ROUTES.has(routeName),
+    isDd: DOUBLE_DECKER_ROUTES.has(routeName) || DOUBLE_DECKER_DUTY_CODES.has(codeStr)
+  };
+}
+
+function isEffectiveJb(rec, y, m0, d) {
+  if (!rec) return false;
+  if (rec.isJb !== undefined) return !!rec.isJb;
+  const c = rec.code || "";
+  if (!c || c === "RD" || c === "HO" || c === "SL") return false;
+  const found = lookupDuty(effectiveDayCode(y, m0, d, !!rec.isPh), c);
+  return found ? JUMP_BUS_ROUTES.has(found.route) : false;
+}
+
+function isEffectiveDd(rec, y, m0, d) {
+  if (!rec) return false;
+  if (rec.isDd !== undefined) return !!rec.isDd;
+  const c = rec.code || "";
+  if (!c || c === "RD" || c === "HO" || c === "SL") return false;
+  if (DOUBLE_DECKER_DUTY_CODES.has(String(c).trim())) return true;
+  const found = lookupDuty(effectiveDayCode(y, m0, d, !!rec.isPh), c);
+  return found ? DOUBLE_DECKER_ROUTES.has(found.route) : false;
+}
+
+function isRecWrd(rec) {
+  if (!rec) return false;
+  return !!rec.isWrd;
+}
+
+function isRec2x(rec) {
+  if (!rec) return false;
+  return Boolean(rec.isWrd || rec.isPh);
+}
+
+function getSpecialMode(rec) {
+  const wrd = !!(rec && rec.isWrd);
+  const ph = !!(rec && rec.isPh);
+  if (wrd && ph) return "BOTH";
+  if (wrd) return "WRD";
+  if (ph) return "PH";
+  return "NONE";
+}
+
+function computeDayBreakdown(rec) {
+  if (!rec) {
+    return { basicDays: 0, phDays: 0, isWrd: false, is2xOt: false, hasDuty: false };
+  }
+  const c = String(rec.code || "").trim();
+  const isRd = (c === "RD");
+  const isSl = (c === "SL");
+  const isHo = (c === "HO");
+  const hasDuty = Boolean((c && !isRd && !isSl && !isHo) || (rec.customWorkMins && rec.customWorkMins > 0));
+  const isPh = !!rec.isPh;
+  const isWrd = isRecWrd(rec);
+  const is2xOt = isRec2x(rec);
+
+  const dutyBaseDay = (!isSl && !isRd && (hasDuty || isHo)) ? 1 : 0;
+  const phDays = isPh ? 1 : 0;
+  const basicDays = dutyBaseDay + phDays;
+
+  return {
+    basicDays,
+    phDays,
+    isWrd,
+    is2xOt,
+    hasDuty
+  };
+}
+
+function isScheduledDutyRecord(rec) {
+  if (!rec) return false;
+  const c = String(rec.code || "").trim();
+  if (c === "RD" || c === "SL") return false;
+  const isDutyCode = c && c !== "HO";
+  return Boolean(isDutyCode || (rec.customWorkMins && rec.customWorkMins > 0));
+}
+
+function countQuarterDuties(year, quarterStartMonth0) {
+  let count = 0;
+  for (let offset = 0; offset < 3; offset++) {
+    const m0 = quarterStartMonth0 + offset;
+    const daysInMonth = new Date(year, m0 + 1, 0).getDate();
+    const ymPrefix = `${year}-${String(m0 + 1).padStart(2, "0")}`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const k = `${ymPrefix}-${String(d).padStart(2, "0")}`;
+      if (isScheduledDutyRecord(state.schedule[k])) {
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+function matchQuarterlyProductivityTier(dutyCount) {
+  if (dutyCount > 72) return 270;
+  if (dutyCount >= 70) return 180;
+  if (dutyCount >= 66) return 120;
+  return 0;
+}
+
+function getQuarterlyProductivityInfo(year, month0, isZh) {
+  let targetYear = year;
+  let qStartMonth0 = Math.floor(month0 / 3) * 3;
+  let isPayMonth = false;
+
+  if (month0 === 0) {
+    targetYear = year - 1;
+    qStartMonth0 = 9;
+    isPayMonth = true;
+  } else if (month0 === 3) {
+    targetYear = year;
+    qStartMonth0 = 0;
+    isPayMonth = true;
+  } else if (month0 === 6) {
+    targetYear = year;
+    qStartMonth0 = 3;
+    isPayMonth = true;
+  } else if (month0 === 9) {
+    targetYear = year;
+    qStartMonth0 = 6;
+    isPayMonth = true;
+  }
+
+  const dutyCount = countQuarterDuties(targetYear, qStartMonth0);
+  const tierAmount = matchQuarterlyProductivityTier(dutyCount);
+  const paidAmount = isPayMonth ? tierAmount : 0;
+
+  const qMap = {
+    0: { en: `Q1 (Jan–Mar ${targetYear})`, zh: `${targetYear}年 Q1 (1–3月)`, payEn: "Apr", payZh: "4月" },
+    3: { en: `Q2 (Apr–Jun ${targetYear})`, zh: `${targetYear}年 Q2 (4–6月)`, payEn: "Jul", payZh: "7月" },
+    6: { en: `Q3 (Jul–Sep ${targetYear})`, zh: `${targetYear}年 Q3 (7–9月)`, payEn: "Oct", payZh: "10月" },
+    9: { en: `Q4 (Oct–Dec ${targetYear})`, zh: `${targetYear}年 Q4 (10–12月)`, payEn: "Jan", payZh: "1月" }
+  };
+  const qMeta = qMap[qStartMonth0];
+
+  return {
+    dutyCount,
+    tierAmount,
+    paidAmount,
+    isPayMonth,
+    qLabel: isZh ? qMeta.zh : qMeta.en,
+    payMonthLabel: isZh ? qMeta.payZh : qMeta.payEn
+  };
+}
+
+function populateExtraDaySelect() {
+  const sel = document.getElementById("extraDaySelect");
+  if (!sel) return;
+  const tr = t();
+  const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
+  const prevVal = Number(sel.value) || 1;
+  sel.innerHTML = "";
+  for (let d = 1; d <= daysInMonth; d++) {
+    const opt = document.createElement("option");
+    opt.value = d;
+    opt.textContent = tr.daySuffix(d);
+    if (d === Math.min(prevVal, daysInMonth)) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function initSelectors() {
+  const ySel = document.getElementById("yearSelect");
+  const mSel = document.getElementById("monthSelect");
+  ySel.innerHTML = "";
+  for (let y = 2025; y <= 2028; y++) {
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    if (y === state.year) opt.selected = true;
+    ySel.appendChild(opt);
+  }
+  mSel.innerHTML = "";
+  SHORT_MONTHS.forEach((label, idx) => {
+    const opt = document.createElement("option");
+    opt.value = idx;
+    opt.textContent = label;
+    if (idx === state.month) opt.selected = true;
+    mSel.appendChild(opt);
+  });
+  ySel.onchange = () => { state.year = Number(ySel.value); saveState(); populateExtraDaySelect(); renderAll(); };
+  mSel.onchange = () => { state.month = Number(mSel.value); saveState(); populateExtraDaySelect(); renderAll(); };
+  populateExtraDaySelect();
+}
+
+function stepMonth(delta) {
+  let m = state.month + delta;
+  let y = state.year;
+  if (m < 0) { m = 11; y--; }
+  if (m > 11) { m = 0; y++; }
+  state.year = y;
+  state.month = m;
+  saveState();
+  initSelectors();
+  renderAll();
+}
+
+function goToday() {
+  const now = new Date();
+  state.year = now.getFullYear();
+  state.month = now.getMonth();
+  saveState();
+  initSelectors();
+  const sel = document.getElementById("extraDaySelect");
+  if (sel) sel.value = String(now.getDate());
+  renderAll();
+}
+
+function toggleRouteDrawer() {
+  const body = document.getElementById("routeDrawerBody");
+  const arrow = document.getElementById("drawerArrow");
+  const open = body.classList.toggle("open");
+  arrow.textContent = open ? "▲" : "▼";
+  if (open) renderRouteDrawerList();
+}
+
+function toggleDutyCardDrawer() {
+  const body = document.getElementById("dutyCardDrawerBody");
+  const arrow = document.getElementById("dcDrawerArrow");
+  const trig = document.getElementById("dcInlineTrigger");
+  const open = body.classList.toggle("open");
+  arrow.textContent = open ? "▲" : "▼";
+  if (trig) trig.classList.toggle("open", open);
+  if (open) renderDutyCards();
+}
+
+function toggleGuideDrawer() {
+  const body = document.getElementById("guideDrawerBody");
+  const arrow = document.getElementById("guideArrow");
+  const open = body.classList.toggle("open");
+  arrow.textContent = open ? "▲" : "▼";
+}
+
+function renderRouteDrawerList() {
+  const q = (document.getElementById("schedRouteSearch").value || "").trim().toLowerCase();
+  const list = document.getElementById("routeCheckList");
+  list.innerHTML = "";
+  AVAILABLE_ROUTES.forEach(rName => {
+    const lbl = document.createElement("label");
+    lbl.className = "route-check-item";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = state.selectedRoutes.includes(rName);
+    cb.onchange = () => {
+      if (cb.checked) {
+        if (!state.selectedRoutes.includes(rName)) state.selectedRoutes.push(rName);
+        state.selectedRoutes = normalizeSelectedRoutes(state.selectedRoutes);
+      } else {
+        state.selectedRoutes = state.selectedRoutes.filter(x => x !== rName);
+      }
+      saveState();
+      updateRouteBadge();
+      renderRouteDrawerList();
+      renderCalendar();
+    };
+    const span = document.createElement("span");
+    span.textContent = rName;
+    lbl.appendChild(cb);
+    lbl.appendChild(span);
+    list.appendChild(lbl);
+  });
+
+  if (drawerShiftFilter === "T") drawerShiftFilter = "SPLIT";
+  const sBar = document.getElementById("drawerShiftFilterBar");
+  sBar.innerHTML = "";
+  SHIFT_OPTIONS.forEach(sf => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `shift-pill ${sf.cls} ${drawerShiftFilter === sf.key ? "active" : ""}`;
+    b.textContent = sf.label;
+    b.onclick = () => {
+      drawerShiftFilter = sf.key;
+      renderRouteDrawerList();
+    };
+    sBar.appendChild(b);
+  });
+
+  const preview = document.getElementById("drawerDutyPreview");
+  preview.innerHTML = "";
+  const matches = [];
+  state.selectedRoutes.forEach(rName => {
+    const rPools = ROUTES_DB[rName] || {};
+    Object.entries(rPools).forEach(([code, pool]) => {
+      if (!["1", "2", "3", "4"].includes(code)) return;
+      Object.entries(pool).forEach(([num, obj]) => {
+        if (!String(num).startsWith(code)) return;
+        const st = classifyShift(obj);
+        if (!matchesShiftFilter(st, drawerShiftFilter)) return;
+        const hay = `${rName} ${num} ${obj.depot || ""} ${obj.note || ""} ${st}`.toLowerCase();
+        if (q && !hay.includes(q)) return;
+        matches.push({ rName, num, obj, st });
+      });
+    });
+  });
+  matches.sort((a, b) => a.num.localeCompare(b.num) || a.rName.localeCompare(b.rName));
+  if (q || drawerShiftFilter !== "ALL") {
+    if (!matches.length) {
+      preview.innerHTML = `<span style="font-size:11px; color:var(--muted);">${t().noDutyCards}</span>`;
+    } else {
+      matches.forEach(m => {
+        const hrs = (totalSegMins(m.obj) / 60).toFixed(2);
+        const tag = m.st === "SPLIT" ? "S" : m.st;
+        const chip = document.createElement("span");
+        chip.className = "drawer-duty-chip";
+        chip.textContent = `${m.num} ${tag} (${hrs} h)`;
+        preview.appendChild(chip);
+      });
+    }
+  }
+
+  updateRouteBadge();
+}
+
+function selectAllRoutes(flag) {
+  state.selectedRoutes = flag ? [...AVAILABLE_ROUTES] : [];
+  saveState();
+  renderRouteDrawerList();
+  renderCalendar();
+}
+
+function updateRouteBadge() {
+  const el = document.getElementById("selectedRoutesBadge");
+  const shiftTxt = drawerShiftFilter === "ALL" ? "" : ` · ${drawerShiftFilter}`;
+  el.textContent = state.selectedRoutes.length ? `(${state.selectedRoutes.join(", ")}${shiftTxt})` : `(${t().none})`;
+}
+
+function specialBadgeClass(mode) {
+  if (mode === "BOTH") return "ph-wrd-both";
+  if (mode === "WRD") return "wrd-only";
+  if (mode === "PH") return "ph-only";
+  return "";
+}
+
+function specialOtSubClass(mode) {
+  if (mode === "BOTH") return "is2x-both";
+  if (mode === "WRD") return "is2x-wrd";
+  if (mode === "PH") return "is2x-ph";
+  return "";
+}
+
+function allowanceBadgeHtml(showJb, showDd) {
+  if (showJb && showDd) {
+    return `<span class="cal-jd-tag">J·D</span>`;
+  }
+  if (showJb) {
+    return `<span class="cal-jb-tag">JB</span>`;
+  }
+  if (showDd) {
+    return `<span class="cal-dd-tag">DD</span>`;
+  }
+  return "";
+}
+
+function renderCalendar() {
+  const y = state.year;
+  const m0 = state.month;
+  document.getElementById("monthBannerTitle").textContent = `${MONTH_NAMES[m0]} ${y}`;
+
+  const firstDow = new Date(y, m0, 1).getDay();
+  const daysInMonth = new Date(y, m0 + 1, 0).getDate();
+  const prevDays = new Date(y, m0, 0).getDate();
+
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+
+  let html = `<div class="cal-grid-wrap"><div class="cal-dow-row">`;
+  ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].forEach(d => {
+    html += `<div class="cal-dow">${d}</div>`;
+  });
+  html += `</div><div class="cal-body">`;
+
+  const monOffset = (firstDow + 6) % 7;
+  const totalCells = Math.ceil((monOffset + daysInMonth) / 7) * 7;
+
+  let dutyOt15Mins = 0;
+  let dutyOt20Mins = 0;
+
+  for (let i = 0; i < totalCells; i++) {
+    const dayIdx = i - monOffset + 1;
+    let inMonth = true;
+    let dispNum = dayIdx;
+    let dateKey = "";
+
+    if (dayIdx < 1) {
+      inMonth = false;
+      dispNum = prevDays + dayIdx;
+    } else if (dayIdx > daysInMonth) {
+      inMonth = false;
+      dispNum = dayIdx - daysInMonth;
+    } else {
+      dateKey = `${y}-${String(m0+1).padStart(2,"0")}-${String(dispNum).padStart(2,"0")}`;
+    }
+
+    const rec = inMonth ? (state.schedule[dateKey] || null) : null;
+    const isToday = inMonth && dateKey === todayStr;
+
+    let badgeHtml = `<div class="duty-badge off">TBC</div>`;
+    let subHtml = "";
+    let topTagsHtml = "";
+
+    if (inMonth && rec) {
+      const info = computeDayBreakdown(rec);
+      const mode = getSpecialMode(rec);
+      const spCls = specialBadgeClass(mode);
+      const showJb = isEffectiveJb(rec, y, m0, dispNum);
+      const showDd = isEffectiveDd(rec, y, m0, dispNum);
+      topTagsHtml = allowanceBadgeHtml(showJb, showDd);
+
+      const c = rec.code || "";
+      if (c === "RD") {
+        badgeHtml = `<div class="duty-badge ${spCls || "rd"}">RD</div>`;
+      } else if (c === "HO") {
+        badgeHtml = `<div class="duty-badge ${spCls || "ho"}">HO</div>`;
+      } else if (c === "SL") {
+        badgeHtml = `<div class="duty-badge ${spCls || "sl"}">SL</div>`;
+      } else if (!c) {
+        const fallbackLabel = mode === "BOTH" ? "PH+WRD" : (mode === "WRD" ? "WRD" : (mode === "PH" ? "PH" : "TBC"));
+        badgeHtml = `<div class="duty-badge ${spCls || "off"}">${fallbackLabel}</div>`;
+      } else {
+        const dCode = effectiveDayCode(y, m0, dispNum, !!rec.isPh);
+        const found = lookupDuty(dCode, c);
+        const cls = spCls || "work";
+        badgeHtml = `<div class="duty-badge ${cls}">${c}</div>`;
+        if (found || rec.customWorkMins) {
+          const dutyObj = found ? found.duty : null;
+          const calOtMins = calcDutyOtMins(dutyObj, rec.customWorkMins);
+          const calOtDisp = minsToHours(calOtMins).toFixed(2);
+          if (info.is2xOt) {
+            dutyOt20Mins += calOtMins;
+            subHtml = `<div class="cal-ot-sub ${specialOtSubClass(mode)}">+${calOtDisp}h</div>`;
+          } else {
+            dutyOt15Mins += calOtMins;
+            subHtml = `<div class="cal-ot-sub">+${calOtDisp}h</div>`;
+          }
+        }
+      }
+    }
+
+    const clickAttr = inMonth ? `onclick="openDutyModal('${dateKey}', ${dispNum})"` : "";
+    html += `<div class="cal-cell ${inMonth ? "in-month" : "out-month"} ${isToday ? "is-today" : ""}" ${clickAttr}>
+      <div class="cal-day-top">${topTagsHtml}<div class="cal-day-num">${dispNum}</div></div>
+      <div>${badgeHtml}${subHtml}</div>
+    </div>`;
+  }
+
+  html += `</div></div>`;
+  document.getElementById("calendarContainer").innerHTML = html;
+
+  const ymKey = `${y}-${String(m0+1).padStart(2,"0")}`;
+  const exList = state.extraOt[ymKey] || [];
+  let extra15Mins = 0, extra20Mins = 0;
+  exList.forEach(item => {
+    const m = Math.round(Number(item.mins) || 0);
+    if (item.mult === 2.0) extra20Mins += m;
+    else extra15Mins += m;
+  });
+
+  const cardOt20Mins = dutyOt20Mins + extra20Mins;
+  const totalPlainOtMins = dutyOt15Mins + extra15Mins + cardOt20Mins;
+
+  document.getElementById("sumDutyOt").textContent = `${minsToHours(dutyOt15Mins).toFixed(2)} h`;
+  document.getElementById("sumExtraOt").textContent = `${minsToHours(extra15Mins).toFixed(2)} h`;
+  document.getElementById("sumOt2x").textContent = `${minsToHours(cardOt20Mins).toFixed(2)} h`;
+  document.getElementById("sumTotalOt").textContent = `${minsToHours(totalPlainOtMins).toFixed(2)} h`;
+
+  renderExtraChips(ymKey, exList);
+  renderSalary();
+}
+
+function parseExtraInput(raw) {
+  const s = String(raw || "").trim();
+  if (!s) return null;
+  if (s.includes(".")) {
+    const [hPart, mPart] = s.split(".");
+    const h = parseInt(hPart || "0", 10);
+    const m = parseInt((mPart || "0").padEnd(2, "0").slice(0, 2), 10);
+    if (isNaN(h) || isNaN(m)) return null;
+    return h * 60 + m;
+  }
+  const mins = parseInt(s, 10);
+  return isNaN(mins) ? null : mins;
+}
+
+function fmtMinsToDot(mins) {
+  if (!mins || mins <= 0) return "";
+  const h = Math.floor(mins / 60);
+  const m = String(mins % 60).padStart(2, "0");
+  return `${h}.${m}`;
+}
+
+function addExtraMin(mult) {
+  const inp = document.getElementById("extraMinInput");
+  const daySel = document.getElementById("extraDaySelect");
+  const mins = parseExtraInput(inp.value);
+  if (!mins || mins <= 0) return;
+  const day = Number(daySel ? daySel.value : 1) || 1;
+  const ymKey = `${state.year}-${String(state.month+1).padStart(2,"0")}`;
+  if (!state.extraOt[ymKey]) state.extraOt[ymKey] = [];
+  state.extraOt[ymKey].push({ id: Date.now() + Math.random(), day, mins: Math.round(mins), mult });
+  inp.value = "";
+  saveState();
+  renderCalendar();
+}
+
+function removeExtraItem(ymKey, id) {
+  if (!state.extraOt[ymKey]) return;
+  state.extraOt[ymKey] = state.extraOt[ymKey].filter(x => x.id !== id);
+  saveState();
+  renderCalendar();
+}
+
+function renderExtraChips(ymKey, exList) {
+  const tr = t();
+  const c15 = document.getElementById("extraChips15");
+  const c20 = document.getElementById("extraChips20");
+  c15.innerHTML = "";
+  c20.innerHTML = "";
+
+  const sorted = [...exList].sort((a, b) => (Number(a.day) || 0) - (Number(b.day) || 0) || a.id - b.id);
+  const list15 = sorted.filter(it => it.mult !== 2.0);
+  const list20 = sorted.filter(it => it.mult === 2.0);
+
+  const renderGroup = (container, items, is2x) => {
+    if (!items.length) {
+      container.innerHTML = `<div class="extra-empty">${tr.extraEmpty}</div>`;
+      return;
+    }
+    const p1Items = items.filter(it => (Number(it.day) || 1) <= 15);
+    const p2Items = items.filter(it => (Number(it.day) || 1) > 15);
+
+    const buildSection = (label, subItems) => {
+      if (!subItems.length) return "";
+      const subMins = subItems.reduce((acc, it) => acc + Math.round(Number(it.mins) || 0), 0);
+      const cardsHtml = subItems.map(it => {
+        const m = Math.round(Number(it.mins) || 0);
+        const hrs = minsToHours(m).toFixed(2);
+        const dTag = it.day ? `<span class="chip-day-tag">${tr.chipDay(it.day)}</span>` : "";
+        return `
+          <div class="chip ${is2x ? "chip-2x" : ""}">
+            <div class="chip-main">
+              ${dTag}
+              <span>+${hrs}h</span>
+              <span class="chip-min-hint">(${m}m)</span>
+            </div>
+            <span class="chip-del" onclick="removeExtraItem('${ymKey}', ${it.id})">×</span>
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <div class="extra-period-sub">
+          <span>${label}</span>
+          <span>${minsToHours(subMins).toFixed(2)} h (${subMins}m)</span>
+        </div>
+        <div class="extra-chips-grid">${cardsHtml}</div>
+      `;
+    };
+
+    container.innerHTML = buildSection(tr.extraP1Label, p1Items) + buildSection(tr.extraP2Label, p2Items);
+  };
+
+  renderGroup(c15, list15, false);
+  renderGroup(c20, list20, true);
+
+  const m15 = list15.reduce((acc, it) => acc + Math.round(Number(it.mins) || 0), 0);
+  const m20 = list20.reduce((acc, it) => acc + Math.round(Number(it.mins) || 0), 0);
+
+  document.getElementById("extra15Summary").textContent = `${minsToHours(m15).toFixed(2)} h (${m15}m)`;
+  document.getElementById("extra20Summary").textContent = `${minsToHours(m20).toFixed(2)} h (${m20}m)`;
+  document.getElementById("extraMinsTotal").textContent = `1.5x: ${minsToHours(m15).toFixed(2)} h · 2.0x: ${minsToHours(m20).toFixed(2)} h`;
+}
+
+function getModalDutyMap(dCode) {
+  const map = {};
+  const targetCode = String(dCode || "");
+  if (!["1", "2", "3", "4"].includes(targetCode)) return map;
+
+  for (const rName of getSearchableRoutes()) {
+    const rPools = ROUTES_DB[rName] || {};
+    const pool = rPools[targetCode] || {};
+    for (const [num, obj] of Object.entries(pool)) {
+      if (!String(num).startsWith(targetCode)) continue;
+      if (!map[num]) map[num] = { route: rName, duty: obj };
+    }
+  }
+  return map;
+}
+
+function renderModalGrid(dCode) {
+  if (drawerShiftFilter === "T") drawerShiftFilter = "SPLIT";
+  const sBar = document.getElementById("modalShiftFilterBar");
+  sBar.innerHTML = "";
+  SHIFT_OPTIONS.forEach(sf => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `shift-pill ${sf.cls} ${drawerShiftFilter === sf.key ? "active" : ""}`;
+    b.textContent = sf.label;
+    b.onclick = () => {
+      drawerShiftFilter = sf.key;
+      updateRouteBadge();
+      renderModalGrid(dCode);
+    };
+    sBar.appendChild(b);
+  });
+
+  const grid = document.getElementById("modalCodeGrid");
+  grid.innerHTML = "";
+  const pool = getModalDutyMap(dCode);
+  Object.keys(pool).sort().forEach(num => {
+    const entry = pool[num];
+    const st = classifyShift(entry.duty);
+    if (!matchesShiftFilter(st, drawerShiftFilter)) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `code-btn ${modalSelectedCode === num ? "selected" : ""}`;
+    btn.innerHTML = `<span>${num}</span>${shiftBadgeHtml(st)}`;
+    btn.onclick = () => {
+      modalSelectedCode = num;
+      const flags = routeAutoFlags(entry.route, num);
+      document.getElementById("modalJbToggle").checked = flags.isJb;
+      document.getElementById("modalDdToggle").checked = flags.isDd;
+      applySelection(true);
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function refreshModalDayCodeState() {
+  if (!modalDateKey) return;
+  const tr = t();
+  const [y, m, d] = modalDateKey.split("-").map(Number);
+  const isPh = !!document.getElementById("modalPhToggle").checked;
+  const dCode = effectiveDayCode(y, m - 1, d, isPh);
+  const routeLabel = getSearchableRoutes().join(", ");
+  document.getElementById("modalDateTitle").textContent = tr.modalDateTitle(modalDateKey);
+  document.getElementById("modalRuleHint").innerHTML = `<span>Day Code: <b>${dCode} · ${tr.dayCodeLabel(dCode)}</b></span><span>${routeLabel}</span>`;
+  renderModalGrid(dCode);
+}
+
+function openDutyModal(dateKey, dayNum) {
+  modalDateKey = dateKey;
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const rec = state.schedule[dateKey] || { code: "", isWrd: false, isPh: false, isJb: false, isDd: false, customWorkMins: null };
+  modalSelectedCode = rec.code || "";
+
+  document.getElementById("modalWrdToggle").checked = isRecWrd(rec);
+  document.getElementById("modalPhToggle").checked = !!rec.isPh;
+  document.getElementById("modalJbToggle").checked = isEffectiveJb(rec, y, m - 1, d);
+  document.getElementById("modalDdToggle").checked = isEffectiveDd(rec, y, m - 1, d);
+  document.getElementById("modalCustomWorkInp").value = fmtMinsToDot(rec.customWorkMins);
+
+  refreshModalDayCodeState();
+  document.getElementById("dutyModal").classList.add("open");
+}
+
+function quickSetCode(code) {
+  modalSelectedCode = code;
+  if (!code) {
+    document.getElementById("modalWrdToggle").checked = false;
+    document.getElementById("modalPhToggle").checked = false;
+    document.getElementById("modalJbToggle").checked = false;
+    document.getElementById("modalDdToggle").checked = false;
+    document.getElementById("modalCustomWorkInp").value = "";
+  }
+  applySelection(true);
+}
+
+function applySelection(shouldClose) {
+  if (!modalDateKey) return;
+  const isWrd = document.getElementById("modalWrdToggle").checked;
+  const isPh = document.getElementById("modalPhToggle").checked;
+  const isJb = document.getElementById("modalJbToggle").checked;
+  const isDd = document.getElementById("modalDdToggle").checked;
+  const is2x = isWrd || isPh;
+  const rawWork = document.getElementById("modalCustomWorkInp").value;
+  const customWorkMins = parseExtraInput(rawWork);
+
+  if (!modalSelectedCode && !isWrd && !isPh && !isJb && !isDd && !customWorkMins) {
+    delete state.schedule[modalDateKey];
+  } else {
+    state.schedule[modalDateKey] = {
+      code: modalSelectedCode,
+      isWrd,
+      isPh,
+      isJb,
+      isDd,
+      is2x,
+      customWorkMins: customWorkMins && customWorkMins > 0 ? customWorkMins : null
+    };
+  }
+  saveState();
+  renderCalendar();
+
+  if (shouldClose) {
+    closeModal();
+  }
+}
+
+function closeModal() {
+  document.getElementById("dutyModal").classList.remove("open");
+  modalDateKey = null;
+}
+
+function onBasicSalaryChange(rawVal) {
+  const v = parseFloat(rawVal);
+  state.salaryConfig.basicSalary = !isNaN(v) && v >= 0 ? v : 0;
+  saveState();
+  renderSalary();
+}
+
+function onQosBonusChange(rawVal) {
+  const v = parseFloat(rawVal);
+  const clamped = isNaN(v) ? 0 : Math.min(100, Math.max(0, v));
+  state.salaryConfig.qosBonus = clamped;
+  saveState();
+  renderSalary();
+}
+
+function renderSalary() {
+  const tr = t();
+  const cfg = state.salaryConfig;
+  const basicInp = document.getElementById("basicSalaryInput");
+  if (document.activeElement !== basicInp) {
+    basicInp.value = cfg.basicSalary;
+  }
+
+  const y = state.year;
+  const m0 = state.month;
+  const ymKey = `${y}-${String(m0 + 1).padStart(2, "0")}`;
+  const daysInMonth = new Date(y, m0 + 1, 0).getDate();
+
+  const basicSalaryAmt = Number(cfg.basicSalary) || 0;
+  const { dailyRate, hourlyRate, rate15, rate20 } = calcPayslipRates(basicSalaryAmt);
+
+  let phDaysP1 = 0;
+  let phDaysP2 = 0;
+  let jbDaysP1 = 0;
+  let jbDaysP2 = 0;
+  let ddDaysP1 = 0;
+  let ddDaysP2 = 0;
+  let ot15MinsP1 = 0, ot20MinsP1 = 0;
+  let ot15MinsP2 = 0, ot20MinsP2 = 0;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const k = `${ymKey}-${String(d).padStart(2, "0")}`;
+    const rec = state.schedule[k];
+    if (!rec) continue;
+
+    const isP1 = d <= 15;
+    const info = computeDayBreakdown(rec);
+    const hasJb = isEffectiveJb(rec, y, m0, d);
+    const hasDd = isEffectiveDd(rec, y, m0, d);
+
+    if (hasJb) {
+      if (isP1) jbDaysP1++;
+      else jbDaysP2++;
+    }
+    if (hasDd) {
+      if (isP1) ddDaysP1++;
+      else ddDaysP2++;
+    }
+
+    if (info.phDays > 0) {
+      if (isP1) phDaysP1 += info.phDays;
+      else phDaysP2 += info.phDays;
+    }
+
+    if (info.hasDuty) {
+      const c = String(rec.code || "").trim();
+      const dCode = effectiveDayCode(y, m0, d, !!rec.isPh);
+      const found = c ? lookupDuty(dCode, c) : null;
+      if (found || rec.customWorkMins) {
+        const otMins = calcSalaryDutyOtMins(found ? found.duty : null, rec.customWorkMins, info.isWrd);
+        if (info.is2xOt) {
+          if (isP1) ot20MinsP1 += otMins;
+          else ot20MinsP2 += otMins;
+        } else {
+          if (isP1) ot15MinsP1 += otMins;
+          else ot15MinsP2 += otMins;
+        }
+      }
+    }
+  }
+
+  const exList = state.extraOt[ymKey] || [];
+  exList.forEach(it => {
+    const exDay = Number(it.day) || 1;
+    const isP1 = exDay <= 15;
+    const mins = Math.round(Number(it.mins) || 0);
+    if (it.mult === 2.0) {
+      if (isP1) ot20MinsP1 += mins;
+      else ot20MinsP2 += mins;
+    } else {
+      if (isP1) ot15MinsP1 += mins;
+      else ot15MinsP2 += mins;
+    }
+  });
+
+  const ot15P1 = minsToHours(ot15MinsP1);
+  const ot20P1 = minsToHours(ot20MinsP1);
+  const ot15P2 = minsToHours(ot15MinsP2);
+  const ot20P2 = minsToHours(ot20MinsP2);
+
+  const qpInfo = getQuarterlyProductivityInfo(y, m0, state.lang === "zh");
+  const safeBonusAmt = cfg.safeDriving ? 100 : 0;
+  const qpAmt = qpInfo.paidAmount;
+  const qosAmt = Math.min(100, Math.max(0, Number(cfg.qosBonus) || 0));
+  const extraAmt = Number(cfg.extraAmount) || 0;
+  const baseAndBonusesAmt = roundMoney(basicSalaryAmt + safeBonusAmt + qpAmt + qosAmt + extraAmt);
+
+  const phAmtP1 = roundMoney(dailyRate * phDaysP1);
+  const jbAmtP1 = roundMoney(jbDaysP1 * 3);
+  const ddAmtP1 = roundMoney(ddDaysP1 * 7);
+  const ot15AmtP1 = roundMoney(ot15P1 * rate15);
+  const ot20AmtP1 = roundMoney(ot20P1 * rate20);
+  const subP1 = roundMoney(phAmtP1 + jbAmtP1 + ddAmtP1 + ot15AmtP1 + ot20AmtP1);
+
+  const phAmtP2 = roundMoney(dailyRate * phDaysP2);
+  const jbAmtP2 = roundMoney(jbDaysP2 * 3);
+  const ddAmtP2 = roundMoney(ddDaysP2 * 7);
+  const ot15AmtP2 = roundMoney(ot15P2 * rate15);
+  const ot20AmtP2 = roundMoney(ot20P2 * rate20);
+  const subP2 = roundMoney(phAmtP2 + jbAmtP2 + ddAmtP2 + ot15AmtP2 + ot20AmtP2);
+
+  const payout1Total = roundMoney(baseAndBonusesAmt + subP1);
+  const payout2Total = subP2;
+
+  const totalPhDays = phDaysP1 + phDaysP2;
+  const totalJbDays = jbDaysP1 + jbDaysP2;
+  const totalDdDays = ddDaysP1 + ddDaysP2;
+  const total15Hrs = ot15P1 + ot15P2;
+  const total20Hrs = ot20P1 + ot20P2;
+  const totalOtMinsAll = ot15MinsP1 + ot20MinsP1 + ot15MinsP2 + ot20MinsP2;
+  const totalOtHrs = minsToHours(totalOtMinsAll);
+  const allowancesOtTotalAmt = roundMoney(subP1 + subP2);
+  const grossAmt = roundMoney(payout1Total + payout2Total);
+
+  document.getElementById("salaryRateMeta").textContent = tr.rateMeta(dailyRate, hourlyRate);
+
+  const qpBadge = qpInfo.isPayMonth
+    ? `<span class="sal-auto-badge">${tr.autoTag}</span>`
+    : `<span class="sal-pending-badge">${tr.progressTag}</span>`;
+
+  const qpRowHtml = `
+    <div class="sal-row" style="align-items:flex-start;">
+      <div class="sal-info">
+        <div class="sal-title">${tr.qpTitle}</div>
+        <div class="sal-qp-meta">
+          <div class="sal-qp-line">${tr.qpLine(qpInfo.qLabel, qpInfo.dutyCount)}</div>
+          <div class="sal-qp-subline">${tr.qpRuleLine(qpInfo.payMonthLabel, qpInfo.isPayMonth)}</div>
+        </div>
+      </div>
+      <div class="sal-qp-right">
+        <div class="sal-amt">$${qpAmt.toFixed(2)}</div>
+        <div class="sal-qp-pill-group">
+          ${qpBadge}
+          <span class="sal-tag">${qpInfo.dutyCount}d → $${qpInfo.tierAmount}</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const baseRowsTop = [
+    {
+      title: tr.safeTitle,
+      sub: tr.safeSub,
+      ctrl: `<input type="checkbox" style="width:18px; height:18px; cursor:pointer;" ${cfg.safeDriving ? "checked" : ""} onchange="state.salaryConfig.safeDriving=this.checked;saveState();renderSalary();" />`,
+      amt: `$${safeBonusAmt.toFixed(2)}`
+    }
+  ];
+
+  const baseRowsBottom = [
+    {
+      title: tr.qosTitle,
+      sub: tr.qosSub,
+      ctrl: `<input type="number" min="0" max="100" step="0.01" class="sal-input" value="${qosAmt}" onchange="onQosBonusChange(this.value)" />`,
+      amt: `$${qosAmt.toFixed(2)}`
+    },
+    {
+      title: tr.extraTitle,
+      sub: tr.extraSub,
+      ctrl: `<input type="number" step="0.01" class="sal-input" value="${cfg.extraAmount}" onchange="state.salaryConfig.extraAmount=Number(this.value)||0;saveState();renderSalary();" />`,
+      amt: `$${extraAmt.toFixed(2)}`
+    }
+  ];
+
+  const p1Rows = [
+    {
+      title: tr.phWrdP1Title,
+      sub: tr.phWrdSub(phDaysP1, dailyRate),
+      ctrl: `<span class="sal-auto-badge">${tr.autoTag}</span><span class="sal-tag">${phDaysP1}d</span>`,
+      amt: `$${phAmtP1.toFixed(2)}`
+    },
+    {
+      title: tr.jbP1Title,
+      sub: tr.jbSub(jbDaysP1),
+      ctrl: `<span class="sal-auto-badge">${tr.autoTag}</span><span class="sal-tag">${jbDaysP1}d</span>`,
+      amt: `$${jbAmtP1.toFixed(2)}`
+    },
+    {
+      title: tr.ddP1Title,
+      sub: tr.ddSub(ddDaysP1),
+      ctrl: `<span class="sal-auto-badge">${tr.autoTag}</span><span class="sal-tag">${ddDaysP1}d</span>`,
+      amt: `$${ddAmtP1.toFixed(2)}`
+    },
+    {
+      title: tr.ot15P1Title,
+      sub: tr.otRowSub(ot15P1, ot15MinsP1, rate15),
+      ctrl: `<span class="sal-tag">${ot15P1.toFixed(2)}h</span>`,
+      amt: `$${ot15AmtP1.toFixed(2)}`
+    },
+    {
+      title: tr.ot20P1Title,
+      sub: tr.otRowSub(ot20P1, ot20MinsP1, rate20),
+      ctrl: `<span class="sal-tag">${ot20P1.toFixed(2)}h</span>`,
+      amt: `$${ot20AmtP1.toFixed(2)}`
+    }
+  ];
+
+  const p2Rows = [
+    {
+      title: tr.phWrdP2Title,
+      sub: tr.phWrdSub(phDaysP2, dailyRate),
+      ctrl: `<span class="sal-auto-badge">${tr.autoTag}</span><span class="sal-tag">${phDaysP2}d</span>`,
+      amt: `$${phAmtP2.toFixed(2)}`
+    },
+    {
+      title: tr.jbP2Title,
+      sub: tr.jbSub(jbDaysP2),
+      ctrl: `<span class="sal-auto-badge">${tr.autoTag}</span><span class="sal-tag">${jbDaysP2}d</span>`,
+      amt: `$${jbAmtP2.toFixed(2)}`
+    },
+    {
+      title: tr.ddP2Title,
+      sub: tr.ddSub(ddDaysP2),
+      ctrl: `<span class="sal-auto-badge">${tr.autoTag}</span><span class="sal-tag">${ddDaysP2}d</span>`,
+      amt: `$${ddAmtP2.toFixed(2)}`
+    },
+    {
+      title: tr.ot15P2Title,
+      sub: tr.otRowSub(ot15P2, ot15MinsP2, rate15),
+      ctrl: `<span class="sal-tag">${ot15P2.toFixed(2)}h</span>`,
+      amt: `$${ot15AmtP2.toFixed(2)}`
+    },
+    {
+      title: tr.ot20P2Title,
+      sub: tr.otRowSub(ot20P2, ot20MinsP2, rate20),
+      ctrl: `<span class="sal-tag">${ot20P2.toFixed(2)}h</span>`,
+      amt: `$${ot20AmtP2.toFixed(2)}`
+    }
+  ];
+
+  const renderRowHtml = r => `
+    <div class="sal-row">
+      <div class="sal-info">
+        <div class="sal-title">${r.title}</div>
+        <div class="sal-sub">${r.sub}</div>
+      </div>
+      <div class="sal-ctrl">${r.ctrl}</div>
+      <div class="sal-amt">${r.amt}</div>
+    </div>
+  `;
+
+  document.getElementById("salaryBaseRows").innerHTML =
+    baseRowsTop.map(renderRowHtml).join("") +
+    qpRowHtml +
+    baseRowsBottom.map(renderRowHtml).join("");
+  document.getElementById("salaryPeriod1Rows").innerHTML = p1Rows.map(renderRowHtml).join("");
+  document.getElementById("salaryPeriod2Rows").innerHTML = p2Rows.map(renderRowHtml).join("");
+
+  document.getElementById("period1Subtotal").textContent = `$${subP1.toFixed(2)}`;
+  document.getElementById("period2Subtotal").textContent = `$${subP2.toFixed(2)}`;
+
+  document.getElementById("cardPay1").textContent = `$${payout1Total.toFixed(2)}`;
+  document.getElementById("cardPay1Sub").textContent = tr.pay1Sub(phDaysP1, jbDaysP1, ddDaysP1, minsToHours(ot15MinsP1 + ot20MinsP1));
+
+  document.getElementById("cardPay2").textContent = `$${payout2Total.toFixed(2)}`;
+  document.getElementById("cardPay2Sub").textContent = tr.pay2Sub(phDaysP2, jbDaysP2, ddDaysP2, minsToHours(ot15MinsP2 + ot20MinsP2));
+
+  document.getElementById("allowOtSummarySub").textContent = tr.allowOtSub(totalPhDays, totalJbDays, totalDdDays, total15Hrs, total20Hrs);
+  document.getElementById("allowancesOtTotal").textContent = `$${allowancesOtTotalAmt.toFixed(2)}`;
+
+  document.getElementById("grossSummarySub").textContent = tr.grossSub(basicSalaryAmt, totalPhDays, totalJbDays, totalDdDays, totalOtHrs, qpAmt);
+  document.getElementById("estimateGrossSalary").textContent = `$${grossAmt.toFixed(2)}`;
+}
+
+function assignDutyFromCard(routeName, dutyNum) {
+  const tr = t();
+  const daySel = document.getElementById("dcAssignDaySelect");
+  const d = Number(daySel ? daySel.value : 1) || 1;
+  const dateKey = `${state.year}-${String(state.month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  const prev = state.schedule[dateKey] || {};
+  const flags = routeAutoFlags(routeName, dutyNum);
+  const isWrd = !!prev.isWrd;
+  const isPh = !!prev.isPh;
+  state.schedule[dateKey] = {
+    code: dutyNum,
+    isJb: flags.isJb,
+    isDd: flags.isDd,
+    isWrd,
+    isPh,
+    is2x: isWrd || isPh,
+    customWorkMins: prev.customWorkMins || null
+  };
+  saveState();
+  renderCalendar();
+  const msgEl = document.getElementById("dcAssignMsg");
+  if (msgEl) {
+    msgEl.textContent = tr.assignSavedMsg(dutyNum, d);
+    setTimeout(() => {
+      if (msgEl.textContent === tr.assignSavedMsg(dutyNum, d)) msgEl.textContent = "";
+    }, 3200);
+  }
+}
+
+function renderDutyCards() {
+  const tr = t();
+  if (!AVAILABLE_ROUTES.includes(activeRouteTab)) {
+    activeRouteTab = AVAILABLE_ROUTES[0];
+  }
+  if (activeShiftFilter === "T") activeShiftFilter = "SPLIT";
+
+  const badgeEl = document.getElementById("dcDrawerBadge");
+  if (badgeEl) badgeEl.textContent = `(${activeRouteTab})`;
+
+  const q = (document.getElementById("dcSearchInput").value || "").trim().toLowerCase();
+  const rBar = document.getElementById("routeTabsBar");
+  rBar.innerHTML = "";
+  AVAILABLE_ROUTES.forEach(rName => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `route-tab ${activeRouteTab === rName ? "active" : ""}`;
+    b.textContent = rName;
+    b.onclick = () => { activeRouteTab = rName; activeDutyPill = null; renderDutyCards(); };
+    rBar.appendChild(b);
+  });
+
+  const sBar = document.getElementById("dcShiftFilterBar");
+  sBar.innerHTML = "";
+  SHIFT_OPTIONS.forEach(sf => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `shift-pill ${sf.cls} ${activeShiftFilter === sf.key ? "active" : ""}`;
+    b.textContent = sf.label;
+    b.onclick = () => { activeShiftFilter = sf.key; activeDutyPill = null; renderDutyCards(); };
+    sBar.appendChild(b);
+  });
+
+  const rPools = ROUTES_DB[activeRouteTab] || {};
+  const entries = [];
+  Object.entries(rPools).forEach(([code, pool]) => {
+    if (!["1", "2", "3", "4"].includes(code)) return;
+    Object.entries(pool).forEach(([num, obj]) => {
+      if (!String(num).startsWith(code)) return;
+      const st = classifyShift(obj);
+      if (!matchesShiftFilter(st, activeShiftFilter)) return;
+      const hay = `${activeRouteTab} ${num} ${obj.depot || ""} ${obj.note || ""} ${st}`.toLowerCase();
+      if (q && !hay.includes(q)) return;
+      entries.push({ code, num, obj, st });
+    });
+  });
+
+  const pillBox = document.getElementById("dutyCardPills");
+  const detailBox = document.getElementById("dutyCardDetail");
+  pillBox.innerHTML = "";
+
+  if (!entries.length) {
+    pillBox.innerHTML = `<span style="font-size:12px; color:var(--muted);">${tr.noDutyCards}</span>`;
+    detailBox.innerHTML = `
+      <div class="merged-dc-head">
+        <div class="merged-route-title">${activeRouteTab}</div>
+        <div class="merged-duty-badge">${tr.noDuty}</div>
+      </div>
+      <div class="dc-summary-grid">
+        <div class="dc-box"><div class="dc-box-label">${tr.signOn}</div><div class="dc-box-val">--:--</div></div>
+        <div class="dc-box"><div class="dc-box-label">${tr.signOff}</div><div class="dc-box-val">--:--</div></div>
+        <div class="dc-box"><div class="dc-box-label">${tr.workTotal}</div><div class="dc-box-val accent">0:00</div></div>
+      </div>
+    `;
+    return;
+  }
+
+  entries.sort((a, b) => a.num.localeCompare(b.num) || a.code.localeCompare(b.code));
+  if (!activeDutyPill || !entries.some(e => `${e.code}:${e.num}` === activeDutyPill)) {
+    activeDutyPill = `${entries[0].code}:${entries[0].num}`;
+  }
+
+  entries.forEach(e => {
+    const key = `${e.code}:${e.num}`;
+    const p = document.createElement("button");
+    p.type = "button";
+    p.className = `duty-pill ${key === activeDutyPill ? "active" : ""}`;
+    p.innerHTML = `<span>${e.num}</span>${shiftBadgeHtml(e.st)}`;
+    p.onclick = () => { activeDutyPill = key; renderDutyCards(); };
+    pillBox.appendChild(p);
+  });
+
+  const cur = entries.find(e => `${e.code}:${e.num}` === activeDutyPill) || entries[0];
+  const mins = totalSegMins(cur.obj);
+  const totH = Math.floor(mins / 60);
+  const totM = String(mins % 60).padStart(2, "0");
+  const firstOn = fmtHM(cur.obj.segs[0][0]);
+  const lastOff = fmtHM(cur.obj.segs[cur.obj.segs.length - 1][1]);
+  const codeDayMap = { "1": "Mon–Thu", "2": "Fri", "3": "Sat", "4": "Sun", "8": "PH" };
+  const shiftLabelMap = { "AM": "AM", "T": "T (S)", "PM": "PM", "SPLIT": "S" };
+
+  const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
+  const now = new Date();
+  const defaultDay = (now.getFullYear() === state.year && now.getMonth() === state.month)
+    ? now.getDate()
+    : 1;
+  const prevDaySel = document.getElementById("dcAssignDaySelect");
+  const chosenDay = prevDaySel ? Math.min(Number(prevDaySel.value) || defaultDay, daysInMonth) : defaultDay;
+  let dayOptsHtml = "";
+  for (let d = 1; d <= daysInMonth; d++) {
+    dayOptsHtml += `<option value="${d}" ${d === chosenDay ? "selected" : ""}>${tr.daySuffix(d)}</option>`;
+  }
+
+  let splitHtml = "";
+  if (cur.obj.segs.length > 1) {
+    const gapMins = Math.max(0, cur.obj.segs[1][0] - cur.obj.segs[0][1]);
+    const gapH = Math.floor(gapMins / 60);
+    const gapM = String(gapMins % 60).padStart(2, "0");
+    splitHtml = `<div class="dc-split-grid">` +
+      cur.obj.segs.map(([s, e], idx) => {
+        const dm = e - s;
+        return `<div class="dc-split-box">
+          <div class="dc-split-title">${tr.partLabel(idx)}</div>
+          <div class="dc-split-times">${fmtHM(s)} – ${fmtHM(e)}</div>
+          <div class="dc-split-sub">${tr.partWork(Math.floor(dm/60), String(dm%60).padStart(2,"0"))}</div>
+        </div>`;
+      }).join("") +
+      `<div class="dc-break-banner">${tr.breakBanner(fmtHM(cur.obj.segs[0][1]), fmtHM(cur.obj.segs[1][0]), gapH, gapM)}</div>` +
+      `</div>`;
+  }
+
+  detailBox.innerHTML = `
+    <div class="merged-dc-head">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div class="merged-route-title">${activeRouteTab}</div>
+        <div class="merged-duty-badge">Duty ${cur.num}</div>
+      </div>
+      <div class="dc-assign-bar">
+        <select id="dcAssignDaySelect" style="padding:4px 7px; font-size:12px;">${dayOptsHtml}</select>
+        <button type="button" class="dc-assign-btn" onclick="assignDutyFromCard('${activeRouteTab}', '${cur.num}')">${tr.assignToDayBtn}</button>
+      </div>
+    </div>
+    <div class="dc-summary-grid">
+      <div class="dc-box"><div class="dc-box-label">${tr.signOn}</div><div class="dc-box-val">${firstOn}</div></div>
+      <div class="dc-box"><div class="dc-box-label">${tr.signOff}</div><div class="dc-box-val">${lastOff}</div></div>
+      <div class="dc-box"><div class="dc-box-label">${tr.workTotal}</div><div class="dc-box-val accent">${totH}:${totM}</div></div>
+    </div>
+    ${splitHtml}
+    <div class="dc-meta-line">
+      <span>${shiftLabelMap[cur.st] || cur.st} · ${codeDayMap[cur.code] || ""} · ${cur.obj.depot || ""}${cur.obj.note ? " · " + cur.obj.note : ""}</span>
+    </div>
+  `;
+}
+
+function renderGreenRoad() {
+  const tr = t();
+  const startYear = state.month >= 9 ? state.year : state.year - 1;
+  const yrKey = `${startYear}-10`;
+  if (!state.greenroad[yrKey]) state.greenroad[yrKey] = {};
+
+  const sel = document.getElementById("grRangeFilter");
+  const prevRange = sel.value || "ALL";
+  sel.innerHTML = `
+    <option value="ALL">${tr.grAllOpt(startYear)}</option>
+    <option value="Q1">W1–W13 (Oct – Dec)</option>
+    <option value="Q2">W14–W26 (Jan – Mar)</option>
+    <option value="Q3">W27–W39 (Apr – Jun)</option>
+    <option value="Q4">W40–W52 (Jul – Sep)</option>
+  `;
+  if ([...sel.options].some(o => o.value === prevRange)) sel.value = prevRange;
+
+  const anchor = new Date(startYear, 9, 4);
+  const container = document.getElementById("grWeeksContainer");
+  container.innerHTML = "";
+
+  const vals = [];
+  for (let w = 1; w <= 52; w++) {
+    const sDate = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() + (w - 1) * 7);
+    const eDate = new Date(sDate.getFullYear(), sDate.getMonth(), sDate.getDate() + 6);
+    const fmtD = dt => `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][dt.getMonth()]} ${String(dt.getDate()).padStart(2,"0")}`;
+
+    const rawVal = state.greenroad[yrKey][w];
+    if (rawVal !== undefined && rawVal !== "" && !isNaN(parseFloat(rawVal))) {
+      vals.push(parseFloat(rawVal));
+    }
+
+    const rFilter = sel.value || "ALL";
+    const show = rFilter === "ALL" ||
+      (rFilter === "Q1" && w <= 13) ||
+      (rFilter === "Q2" && w >= 14 && w <= 26) ||
+      (rFilter === "Q3" && w >= 27 && w <= 39) ||
+      (rFilter === "Q4" && w >= 40);
+
+    if (show) {
+      const div = document.createElement("div");
+      div.className = "gr-week-item";
+      div.innerHTML = `
+        <div class="gr-week-meta">
+          <div class="gr-week-no">W${w}</div>
+          <div class="gr-week-range">${fmtD(sDate)} – ${fmtD(eDate)}</div>
+        </div>
+        <input type="number" step="0.1" value="${rawVal ?? ""}" placeholder="-" onchange="setGrWeek('${yrKey}', ${w}, this.value)" />
+      `;
+      container.appendChild(div);
+    }
+  }
+
+  const avg = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : "0.0";
+  document.getElementById("grAvg").textContent = avg;
+  document.getElementById("grCount").textContent = String(vals.length);
+}
+
+function setGrWeek(yrKey, w, val) {
+  if (!state.greenroad[yrKey]) state.greenroad[yrKey] = {};
+  if (val === "") delete state.greenroad[yrKey][w];
+  else state.greenroad[yrKey][w] = val;
+  saveState();
+  renderGreenRoad();
+}
+
+function exportBackup() {
+  document.getElementById("backupBox").value = JSON.stringify(state);
+  document.getElementById("backupMsg").textContent = t().backupExported;
+}
+
+function importBackup() {
+  const txt = document.getElementById("backupBox").value.trim();
+  if (!txt) return;
+  try {
+    const obj = JSON.parse(txt);
+    const base = defaultState();
+    const oldSal = obj.salaryConfig || {};
+    state = {
+      ...base,
+      ...obj,
+      lang: obj.lang === "zh" ? "zh" : base.lang,
+      selectedRoutes: Array.isArray(obj.selectedRoutes) ? normalizeSelectedRoutes(obj.selectedRoutes) : base.selectedRoutes,
+      salaryConfig: {
+        basicSalary: Number(oldSal.basicSalary ?? oldSal.basicBase ?? base.salaryConfig.basicSalary) || 0,
+        safeDriving: oldSal.safeDriving !== undefined ? !!oldSal.safeDriving : base.salaryConfig.safeDriving,
+        qosBonus: Math.min(100, Math.max(0, Number(oldSal.qosBonus ?? base.salaryConfig.qosBonus) || 0)),
+        extraAmount: Number(oldSal.extraAmount ?? oldSal.extraAdj ?? base.salaryConfig.extraAmount) || 0
+      }
+    };
+    saveState();
+    applyStaticTranslations();
+    initSelectors();
+    renderAll();
+    document.getElementById("backupMsg").textContent = t().backupRestored;
+  } catch {
+    document.getElementById("backupMsg").textContent = t().backupInvalid;
+  }
+}
+
+function switchTab(tabName, btnEl) {
+  document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+  document.getElementById(`tab-${tabName}`).classList.add("active");
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  if (btnEl) btnEl.classList.add("active");
+  if (tabName === "greenroad") renderGreenRoad();
+  if (tabName === "salary") renderSalary();
+}
+
+function renderAll() {
+  updateRouteBadge();
+  renderCalendar();
+  renderDutyCards();
+  renderGreenRoad();
+}
+
+applyStaticTranslations();
+initSelectors();
+renderAll();
+</script>
+</body>
+</html>
